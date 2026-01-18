@@ -36,8 +36,8 @@ jobs:
       - name: Authorize Docker push
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
-      - name: Create .env.production file
-        run: echo "${{ secrets.ENV }}" > .env.production
+      - name: Create .env file
+        run: echo "${{ secrets.ENV }}" > .env
 
       - name: Build and Push Container
         run: |
@@ -51,7 +51,9 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          flags: '--allow-unauthenticated'
+          flags: |
+            --allow-unauthenticated
+            --env-vars-file .env
 
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
