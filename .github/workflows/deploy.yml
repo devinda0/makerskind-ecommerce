@@ -36,6 +36,9 @@ jobs:
       - name: Authorize Docker push
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
+      - name: Create .env file
+        run: echo "${{ secrets.ENV }}" > .env
+
       - name: Build and Push Container
         run: |
           docker build -t "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" .
