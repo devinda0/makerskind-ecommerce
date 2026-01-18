@@ -19,7 +19,7 @@ const config = defineConfig({
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
-
+    // tanstackStart must come before viteReact
     tanstackStart({ srcDirectory: './app' }),
     viteReact(),
   ],
