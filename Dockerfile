@@ -25,6 +25,7 @@ ENV PORT=3000
 # TanStack Start / Nitro outputs to .output
 COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/package.json ./
+COPY .env ./
 
 EXPOSE 3000
 
