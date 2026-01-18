@@ -37,9 +37,13 @@ describe('BetterAuth Installation', () => {
 // SECTION 2: MongoDB Adapter Configuration
 // ============================================================================
 describe('MongoDB Adapter Configuration', () => {
+    beforeEach(() => {
+        vi.resetModules()
+    })
+
     it('should export auth instance from server/auth-config', async () => {
         // Mock the MongoDB client before importing auth
-        vi.mock('../server/db/mongo', () => ({
+        vi.doMock('../server/db/mongo', () => ({
             default: Promise.resolve({
                 db: () => ({
                     collection: vi.fn().mockReturnValue({
@@ -59,7 +63,7 @@ describe('MongoDB Adapter Configuration', () => {
     it('should have email and password authentication enabled', async () => {
         // This test verifies the auth configuration includes emailAndPassword
         // We check this by examining the auth module's structure
-        vi.mock('../server/db/mongo', () => ({
+        vi.doMock('../server/db/mongo', () => ({
             default: Promise.resolve({
                 db: () => ({
                     collection: vi.fn().mockReturnValue({
@@ -97,11 +101,11 @@ describe('Auth Server Functions', () => {
     describe('signUp Server Function', () => {
         it('should be exported from server/auth module', async () => {
             // Mock dependencies
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn().mockResolvedValue({ user: { id: '1', email: 'test@test.com' } }),
@@ -117,7 +121,7 @@ describe('Auth Server Functions', () => {
         })
 
         it('should accept SignUpCredentials with name, email, and password', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
@@ -125,7 +129,7 @@ describe('Auth Server Functions', () => {
                 user: { id: '1', email: 'test@test.com', name: 'Test User' } 
             })
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: mockSignUpEmail,
@@ -145,11 +149,11 @@ describe('Auth Server Functions', () => {
 
     describe('signIn Server Function', () => {
         it('should be exported from server/auth module', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -165,11 +169,11 @@ describe('Auth Server Functions', () => {
         })
 
         it('should accept SignInCredentials with email and password', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -188,11 +192,11 @@ describe('Auth Server Functions', () => {
 
     describe('signOut Server Function', () => {
         it('should be exported from server/auth module', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -208,11 +212,11 @@ describe('Auth Server Functions', () => {
         })
 
         it('should not require any input parameters', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -231,11 +235,11 @@ describe('Auth Server Functions', () => {
 
     describe('getSession Server Function', () => {
         it('should be exported from server/auth module', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -251,11 +255,11 @@ describe('Auth Server Functions', () => {
         })
 
         it('should not require any input parameters', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: {
                     api: {
                         signUpEmail: vi.fn(),
@@ -331,7 +335,7 @@ describe('RBAC & User Schema Extension', () => {
     describe('User Schema Additional Fields', () => {
         it('should have role field configuration in auth', async () => {
             // Mock dependencies
-            vi.mock('../server/db/mongo', () => ({
+            vi.doMock('../server/db/mongo', () => ({
                 default: Promise.resolve({
                     db: () => ({
                         collection: vi.fn().mockReturnValue({
@@ -352,15 +356,15 @@ describe('RBAC & User Schema Extension', () => {
 
         it('should export ShippingAddress interface', async () => {
             const { parseShippingAddress } = await import('../utils/rbac')
-            const { UserRole } = await import('../utils/auth')
-            // we just check imports work
+            // UserRole is a type, so it doesn't exist at runtime to be imported here
+            // we just check imports work for runtime values
             expect(parseShippingAddress).toBeDefined()
         })
     })
 
     describe('RBAC Helper Functions', () => {
         it('should export rbac utility functions', async () => {
-            vi.mock('../utils/auth', () => ({
+            vi.doMock('../utils/auth', () => ({
                UserRole: 'user' as const,
                ShippingAddress: {}
             }))
@@ -373,11 +377,11 @@ describe('RBAC & User Schema Extension', () => {
         })
         
         it('should export server rbac functions from server/auth-utils', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-             vi.mock('../server/auth-config', () => ({
+             vi.doMock('../server/auth-config', () => ({
                 auth: { api: { getSession: vi.fn().mockResolvedValue({}) } }
             }))
             
@@ -407,11 +411,11 @@ describe('RBAC & User Schema Extension', () => {
 
     describe('getCurrentUser Server Function', () => {
         it('should be exported from server/auth module', async () => {
-            vi.mock('@tanstack/react-start/server', () => ({
+            vi.doMock('@tanstack/react-start/server', () => ({
                 getRequest: vi.fn().mockReturnValue({ headers: new Headers() })
             }))
             
-            vi.mock('../server/auth-config', () => ({
+            vi.doMock('../server/auth-config', () => ({
                 auth: { api: { getSession: vi.fn().mockResolvedValue({}) } }
             }))
 
