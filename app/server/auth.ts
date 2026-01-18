@@ -1,6 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { auth } from '../utils/auth'
+import { getCurrentUser } from '../utils/rbac'
+
+// Re-export RBAC utilities for convenient access
+export { getCurrentUser }
+export type { UserRole, ShippingAddress, AuthenticatedUser } from '../utils/rbac'
 
 // Type for authentication credentials
 interface SignUpCredentials {
@@ -49,4 +54,3 @@ export const getSession = createServerFn({ method: "GET" })
             headers: request.headers
         })
     })
-
