@@ -9,6 +9,7 @@ export interface AuthenticatedUser {
     role: UserRole;
     shippingAddress: string | null;
     emailVerified: boolean;
+    isAnonymous?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

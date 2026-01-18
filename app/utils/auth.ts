@@ -9,3 +9,16 @@ export interface ShippingAddress {
     zip: string;
     country: string;
 }
+
+// Extended user type that includes anonymous users
+export interface ExtendedUser {
+    id: string;
+    email: string;
+    name: string | null;
+    role: UserRole;
+    shippingAddress: string | null;
+    emailVerified: boolean;
+    isAnonymous?: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}

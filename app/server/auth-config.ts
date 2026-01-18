@@ -1,7 +1,9 @@
 
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { anonymous } from "better-auth/plugins";
 import clientPromise from "./db/mongo";
+import { mergeGuestCart } from "./cart-utils";
 
 // --- Better Auth Configuration (Server Side Only) ---
 
@@ -31,6 +33,15 @@ async function createAuth() {
                 },
             },
         },
+        plugins: [
+            anonymous({
+                emailDomainName: "guest.makerskind.com",
+                onLinkAccount: async ({ anonymousUser, newUser }) => {
+                    // Merge guest cart into the new user's cart
+                    await mergeGuestCart(anonymousUser.user.id, newUser.user.id);
+                },
+            }),
+        ],
     });
 }
 
@@ -59,6 +70,16 @@ export const auth = {
         getSession: async (opts: { headers: Headers }) => {
             const authInstance = await getAuth();
             return authInstance.api.getSession(opts);
+        },
+        signInAnonymous: async (opts: { headers: Headers }) => {
+            const authInstance = await getAuth();
+            // @ts-expect-error - anonymous plugin adds this method
+            return authInstance.api.signInAnonymous(opts);
+        },
+        deleteAnonymousUser: async (opts: { headers: Headers }) => {
+            const authInstance = await getAuth();
+            // @ts-expect-error - anonymous plugin adds this method
+            return authInstance.api.deleteAnonymousUser(opts);
         },
     },
 };

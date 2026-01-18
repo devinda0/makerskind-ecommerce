@@ -77,3 +77,12 @@ export const requireSupplierAccess = createServerFn({ method: "GET" })
         const { requireRole } = await import('./auth-utils')
         return await requireRole(['admin', 'supplier'])
     })
+
+export const signInAnonymous = createServerFn({ method: "POST" })
+    .handler(async () => {
+        const request = getRequest()
+        const { auth } = await import('./auth-config')
+        return await auth.api.signInAnonymous({
+            headers: request.headers
+        })
+    })
