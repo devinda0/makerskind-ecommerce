@@ -1,28 +1,13 @@
-import 'dotenv/config'
+import { serverEnv } from './env'
 
-// Required environment variables
-const requiredEnvVars = [
-  'MONGODB_URI',
-  'FIREBASE_PROJECT_ID',
-  'FIREBASE_CLIENT_EMAIL',
-  'FIREBASE_PRIVATE_KEY',
-  'FIREBASE_STORAGE_BUCKET'
-]
-
-// Validate required variables
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    throw new Error(`Invalid/Missing environment variable: "${envVar}"`)
-  }
-}
-
+// Re-export for backward compatibility during refactor
 export const serverConfig = {
-    mongodbUri: process.env.MONGODB_URI!,
+    mongodbUri: serverEnv.MONGODB_URI,
     firebase: {
-        projectId: process.env.FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY!,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET!
+        projectId: serverEnv.FIREBASE_PROJECT_ID,
+        clientEmail: serverEnv.FIREBASE_CLIENT_EMAIL,
+        privateKey: serverEnv.FIREBASE_PRIVATE_KEY,
+        storageBucket: serverEnv.FIREBASE_STORAGE_BUCKET
     },
-    isDevelopment: process.env.NODE_ENV === 'development',
+    isDevelopment: serverEnv.NODE_ENV === 'development',
 }

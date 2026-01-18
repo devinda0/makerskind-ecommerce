@@ -1,0 +1,12 @@
+import { z } from 'zod'
+
+const envSchema = z.object({
+  MONGODB_URI: z.string().url(),
+  FIREBASE_PROJECT_ID: z.string(),
+  FIREBASE_CLIENT_EMAIL: z.string(),
+  FIREBASE_PRIVATE_KEY: z.string(),
+  FIREBASE_STORAGE_BUCKET: z.string(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+})
+
+export const serverEnv = envSchema.parse(process.env)
