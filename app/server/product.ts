@@ -36,6 +36,11 @@ interface AssociateImageInput {
     mode?: ImageAssociationMode
 }
 
+interface RefineImageInput {
+    productId: string
+    originalImageUrl: string
+}
+
 // --- Server Functions ---
 
 /**
@@ -285,5 +290,80 @@ export const associateImageFn = createServerFn({ method: "POST" })
         }
         
         return { product: stripCostField(updatedProduct), success: true }
+    })
+
+/**
+ * Refine an image using Gemini AI (Supplier/Admin only)
+ * Downloads the original image, sends to Gemini for enhancement,
+ * uploads the result to Firebase Storage, and updates the product record.
+ * Suppliers can only refine images for their own products.
+ * Admins can refine images for any product.
+ */
+export const refineImageFn = createServerFn({ method: "POST" })
+    .inputValidator((data: RefineImageInput) => data)
+    .handler(async ({ data }) => {
+        const { requireRole } = await import('./auth-utils')
+        const { 
+            getProductById, 
+            associateImages, 
+            isProductOwner, 
+            validateFirebaseStorageUrl,
+            stripCostField, 
+            toSerializable 
+        } = await import('./product-utils')
+        const { enhanceProductImage } = await import('./gemini/image-enhancement')
+        
+        // Only suppliers and admins can refine images
+        const user = await requireRole(['supplier', 'admin'])
+        
+        const { productId, originalImageUrl } = data
+        
+        // Validate the image URL is a Firebase Storage URL
+        if (!validateFirebaseStorageUrl(originalImageUrl)) {
+            throw new Error('Invalid image URL: Must be a Firebase Storage URL')
+        }
+        
+        // Check if product exists
+        const existingProduct = await getProductById(productId)
+        if (!existingProduct) {
+            throw new Error('Product not found')
+        }
+        
+        // Check authorization: admin can update any, supplier only their own
+        if (user.role !== 'admin') {
+            const isOwner = await isProductOwner(productId, user.id)
+            if (!isOwner) {
+                throw new Error('Access denied: You can only refine images for your own products')
+            }
+        }
+        
+        // Enhance the image using Gemini AI
+        const enhancedImageUrl = await enhanceProductImage(productId, originalImageUrl)
+        
+        // Associate the enhanced image with the product
+        const updatedProduct = await associateImages(productId, {
+            imageUrls: [enhancedImageUrl],
+            imageType: 'enhanced',
+            mode: 'append'
+        })
+        
+        if (!updatedProduct) {
+            throw new Error('Failed to update product with enhanced image')
+        }
+        
+        // Admin sees full product (serialized), others see filtered
+        if (user.role === 'admin') {
+            return { 
+                product: toSerializable(updatedProduct), 
+                enhancedImageUrl,
+                success: true 
+            }
+        }
+        
+        return { 
+            product: stripCostField(updatedProduct), 
+            enhancedImageUrl,
+            success: true 
+        }
     })
 
