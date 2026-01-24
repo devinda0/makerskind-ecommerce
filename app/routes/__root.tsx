@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 import appCss from '../styles.css?url'
 
@@ -20,7 +21,11 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Makerskind - Handcrafted with Love',
+      },
+      {
+        name: 'description',
+        content: 'Discover unique handcrafted items from talented artisans. Shop authentic handicrafts made with love and care.',
       },
     ],
     links: [
@@ -41,8 +46,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <Header />
-        {children}
+        <div className="app-container">
+          <Header />
+          <main className="main-content">
+            {children}
+          </main>
+          <Footer />
+        </div>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
@@ -59,3 +69,4 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     </html>
   )
 }
+
