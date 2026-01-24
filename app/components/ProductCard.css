@@ -1,0 +1,107 @@
+.product-card {
+    display: block;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(61, 48, 39, 0.08);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(61, 48, 39, 0.15);
+}
+
+.product-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, #f5ebe0 0%, #ede4d9 100%);
+    overflow: hidden;
+}
+
+.product-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-card-image img {
+    transform: scale(1.05);
+}
+
+.product-card-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a89585;
+    font-size: 0.875rem;
+}
+
+.product-card-content {
+    padding: 1.25rem;
+}
+
+.product-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #3d3027;
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-card-description {
+    font-size: 0.875rem;
+    color: #7a6b5d;
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-card-price {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #8b5e3c;
+    margin: 0;
+}
+
+/* Status badge (for admin/supplier views) */
+.product-card-status {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-transform: capitalize;
+}
+
+.product-card-status--active {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.product-card-status--draft {
+    background: rgba(234, 179, 8, 0.15);
+    color: #ca8a04;
+}
+
+.product-card-status--archived {
+    background: rgba(107, 114, 128, 0.15);
+    color: #6b7280;
+}
