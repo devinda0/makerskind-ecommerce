@@ -7,6 +7,7 @@ const envSchema = z.object({
   FIREBASE_CLIENT_EMAIL: z.string(),
   FIREBASE_PRIVATE_KEY: z.string(),
   FIREBASE_STORAGE_BUCKET: z.string(),
+  GOOGLE_GEMINI_API_KEY: z.string(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 })
 
