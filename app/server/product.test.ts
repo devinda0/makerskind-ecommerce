@@ -396,7 +396,7 @@ describe('RBAC for Product Operations', () => {
         })
 
         it('should allow suppliers to update their own products', async () => {
-            const supplierUser = { id: 'supplier-123', role: 'supplier' as const }
+            const supplierUser = { id: 'supplier-123', role: 'supplier' as 'user' | 'supplier' | 'admin' }
             const ownProduct = { supplierId: 'supplier-123' }
             
             const canUpdate = supplierUser.role === 'admin' || ownProduct.supplierId === supplierUser.id
@@ -404,7 +404,7 @@ describe('RBAC for Product Operations', () => {
         })
 
         it('should deny suppliers from updating other suppliers products', async () => {
-            const supplierUser = { id: 'supplier-123', role: 'supplier' as const }
+            const supplierUser = { id: 'supplier-123', role: 'supplier' as 'user' | 'supplier' | 'admin' }
             const otherProduct = { supplierId: 'other-supplier' }
             
             const canUpdate = supplierUser.role === 'admin' || otherProduct.supplierId === supplierUser.id
@@ -438,7 +438,7 @@ describe('Cost Field Filtering for Non-Admin Users', () => {
     })
 
     it('should exclude cost field for unauthenticated users', () => {
-        const session = null // No session
+        const session = null as { user: { role: string } } | null // No session
         const isAdmin = session?.user?.role === 'admin'
         const fullProduct = { pricing: { cost: 25, selling: 50 } }
         
@@ -464,7 +464,7 @@ describe('Cost Field Filtering for Non-Admin Users', () => {
 
 describe('Product List Pagination', () => {
     it('should default to page 1 and limit 20', () => {
-        const options = {}
+        const options: { page?: number; limit?: number } = {}
         const page = Math.max(1, options.page || 1)
         const limit = Math.min(100, Math.max(1, options.limit || 20))
         
@@ -512,3 +512,203 @@ describe('Product Status Filtering', () => {
         expect(validStatuses.includes('archived')).toBe(true)
     })
 })
+
+describe('Image Association Utility Functions', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        vi.resetModules()
+    })
+
+    describe('validateFirebaseStorageUrl', () => {
+        it('should return true for valid Firebase Storage URLs (firebasestorage.googleapis.com)', async () => {
+            const { validateFirebaseStorageUrl } = await import('./product-utils')
+            
+            const validUrl = 'https://firebasestorage.googleapis.com/v0/b/my-bucket/o/images%2Fproduct.jpg'
+            expect(validateFirebaseStorageUrl(validUrl)).toBe(true)
+        })
+
+        it('should return true for valid Cloud Storage URLs (storage.googleapis.com)', async () => {
+            const { validateFirebaseStorageUrl } = await import('./product-utils')
+            
+            const validUrl = 'https://storage.googleapis.com/my-bucket/images/product.jpg'
+            expect(validateFirebaseStorageUrl(validUrl)).toBe(true)
+        })
+
+        it('should return true for gs:// protocol URLs', async () => {
+            const { validateFirebaseStorageUrl } = await import('./product-utils')
+            
+            const validUrl = 'gs://my-bucket/images/product.jpg'
+            expect(validateFirebaseStorageUrl(validUrl)).toBe(true)
+        })
+
+        it('should return false for non-Firebase URLs', async () => {
+            const { validateFirebaseStorageUrl } = await import('./product-utils')
+            
+            expect(validateFirebaseStorageUrl('https://example.com/image.jpg')).toBe(false)
+            expect(validateFirebaseStorageUrl('https://cdn.other-service.com/img.png')).toBe(false)
+            expect(validateFirebaseStorageUrl('http://localhost:3000/image.jpg')).toBe(false)
+        })
+
+        it('should return false for empty or malformed URLs', async () => {
+            const { validateFirebaseStorageUrl } = await import('./product-utils')
+            
+            expect(validateFirebaseStorageUrl('')).toBe(false)
+            expect(validateFirebaseStorageUrl('not-a-url')).toBe(false)
+        })
+    })
+
+    describe('associateImages', () => {
+        it('should append images to existing product images array', async () => {
+            const productId = new ObjectId()
+            const existingProduct = {
+                _id: productId,
+                supplierId: 'supplier-123',
+                name: 'Test Product',
+                images: { original: ['existing.jpg'], enhanced: [] },
+            }
+            
+            mockProductCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 })
+            mockProductCollection.findOne.mockResolvedValueOnce({
+                ...existingProduct,
+                images: { original: ['existing.jpg', 'new1.jpg', 'new2.jpg'], enhanced: [] },
+            })
+            
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages(productId.toString(), {
+                imageUrls: ['new1.jpg', 'new2.jpg'],
+                imageType: 'original',
+                mode: 'append',
+            })
+            
+            expect(result).not.toBeNull()
+            expect(result?.images.original).toContain('new1.jpg')
+            expect(result?.images.original).toContain('new2.jpg')
+        })
+
+        it('should replace images when mode is replace', async () => {
+            const productId = new ObjectId()
+            
+            mockProductCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 })
+            mockProductCollection.findOne.mockResolvedValueOnce({
+                _id: productId,
+                images: { original: ['replaced.jpg'], enhanced: [] },
+            })
+            
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages(productId.toString(), {
+                imageUrls: ['replaced.jpg'],
+                imageType: 'original',
+                mode: 'replace',
+            })
+            
+            expect(result).not.toBeNull()
+            expect(result?.images.original).toEqual(['replaced.jpg'])
+        })
+
+        it('should support associating enhanced images', async () => {
+            const productId = new ObjectId()
+            
+            mockProductCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 })
+            mockProductCollection.findOne.mockResolvedValueOnce({
+                _id: productId,
+                images: { original: [], enhanced: ['enhanced.jpg'] },
+            })
+            
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages(productId.toString(), {
+                imageUrls: ['enhanced.jpg'],
+                imageType: 'enhanced',
+            })
+            
+            expect(result).not.toBeNull()
+            expect(result?.images.enhanced).toContain('enhanced.jpg')
+        })
+
+        it('should return null for non-existent product', async () => {
+            mockProductCollection.updateOne.mockResolvedValueOnce({ matchedCount: 0 })
+            
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages(new ObjectId().toString(), {
+                imageUrls: ['image.jpg'],
+                imageType: 'original',
+            })
+            
+            expect(result).toBeNull()
+        })
+
+        it('should return null for invalid ObjectId', async () => {
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages('invalid-id', {
+                imageUrls: ['image.jpg'],
+                imageType: 'original',
+            })
+            
+            expect(result).toBeNull()
+        })
+
+        it('should default to append mode when mode is not specified', async () => {
+            const productId = new ObjectId()
+            
+            mockProductCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 })
+            mockProductCollection.findOne.mockResolvedValueOnce({
+                _id: productId,
+                images: { original: ['existing.jpg', 'appended.jpg'], enhanced: [] },
+            })
+            
+            const { associateImages } = await import('./product-utils')
+            const result = await associateImages(productId.toString(), {
+                imageUrls: ['appended.jpg'],
+                imageType: 'original',
+                // mode not specified - should default to 'append'
+            })
+            
+            expect(result).not.toBeNull()
+            expect(mockProductCollection.updateOne).toHaveBeenCalled()
+        })
+    })
+})
+
+describe('RBAC for Image Association', () => {
+    it('should allow suppliers to associate images to their own products', () => {
+        const supplierUser = { id: 'supplier-123', role: 'supplier' as 'user' | 'supplier' | 'admin' }
+        const ownProduct = { supplierId: 'supplier-123' }
+        
+        const allowedRoles = ['supplier', 'admin']
+        const canAssociate = allowedRoles.includes(supplierUser.role) && 
+            (supplierUser.role === 'admin' || ownProduct.supplierId === supplierUser.id)
+        
+        expect(canAssociate).toBe(true)
+    })
+
+    it('should allow admins to associate images to any product', () => {
+        const adminUser = { id: 'admin-123', role: 'admin' as const }
+        const anyProduct = { supplierId: 'other-supplier' }
+        
+        const allowedRoles = ['supplier', 'admin']
+        const canAssociate = allowedRoles.includes(adminUser.role) && 
+            (adminUser.role === 'admin' || anyProduct.supplierId === adminUser.id)
+        
+        expect(canAssociate).toBe(true)
+    })
+
+    it('should deny suppliers from associating images to other suppliers products', () => {
+        const supplierUser = { id: 'supplier-123', role: 'supplier' as 'user' | 'supplier' | 'admin' }
+        const otherProduct = { supplierId: 'other-supplier' }
+        
+        const allowedRoles = ['supplier', 'admin']
+        const canAssociate = allowedRoles.includes(supplierUser.role) && 
+            (supplierUser.role === 'admin' || otherProduct.supplierId === supplierUser.id)
+        
+        expect(canAssociate).toBe(false)
+    })
+
+    it('should deny regular users from associating images', () => {
+        const regularUser = { id: 'user-123', role: 'user' as const }
+        
+        const allowedRoles = ['supplier', 'admin']
+        const canAssociate = allowedRoles.includes(regularUser.role)
+        
+        expect(canAssociate).toBe(false)
+    })
+})
+
