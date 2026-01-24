@@ -350,10 +350,78 @@ export async function deleteProduct(productId: string): Promise<boolean> {
     }
 }
 
-/**
- * Check if a user owns a product (is the supplier)
- */
 export async function isProductOwner(productId: string, userId: string): Promise<boolean> {
     const product = await getProductById(productId)
     return product?.supplierId === userId
+}
+
+// --- Image Association Types ---
+
+export type ImageType = 'original' | 'enhanced'
+export type ImageAssociationMode = 'append' | 'replace'
+
+export interface AssociateImagesInput {
+    imageUrls: string[]
+    imageType: ImageType
+    mode?: ImageAssociationMode
+}
+
+// --- Image Association Functions ---
+
+/**
+ * Validate that a URL is a Firebase Storage URL
+ * This is a lightweight format check - does not make network requests
+ */
+export function validateFirebaseStorageUrl(url: string): boolean {
+    // Firebase Storage URLs typically follow these patterns:
+    // - https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}
+    // - https://storage.googleapis.com/{bucket}/{path}
+    // - gs://{bucket}/{path}
+    const firebasePatterns = [
+        /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/.+/,
+        /^https:\/\/storage\.googleapis\.com\/[^/]+\/.+/,
+        /^gs:\/\/[^/]+\/.+/
+    ]
+    
+    return firebasePatterns.some(pattern => pattern.test(url))
+}
+
+/**
+ * Associate image URLs with a product
+ * @param productId - The product ID to update
+ * @param input - Image association input (urls, type, mode)
+ * @returns Updated product or null if not found
+ */
+export async function associateImages(
+    productId: string,
+    input: AssociateImagesInput
+): Promise<WithId<Product> | null> {
+    const collection = await getProductCollection()
+    const { ObjectId } = await import('mongodb')
+    
+    let objectId: ObjectId
+    try {
+        objectId = new ObjectId(productId)
+    } catch {
+        return null
+    }
+    
+    const { imageUrls, imageType, mode = 'append' } = input
+    const fieldPath = `images.${imageType}`
+    
+    // Build update operation based on mode
+    const updateOperation = mode === 'append'
+        ? { $push: { [fieldPath]: { $each: imageUrls } }, $set: { updatedAt: new Date() } }
+        : { $set: { [fieldPath]: imageUrls, updatedAt: new Date() } }
+    
+    const result = await collection.updateOne(
+        { _id: objectId },
+        updateOperation
+    )
+    
+    if (result.matchedCount === 0) {
+        return null
+    }
+    
+    return await collection.findOne({ _id: objectId })
 }

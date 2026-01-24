@@ -2,7 +2,9 @@ import { createServerFn } from '@tanstack/react-start'
 
 import type { 
     CreateProductInput, 
-    UpdateProductInput
+    UpdateProductInput,
+    ImageType,
+    ImageAssociationMode
 } from './product-utils'
 
 // --- Input Types for Server Functions ---
@@ -25,6 +27,13 @@ interface UpdateProductServerInput extends UpdateProductInput {
 
 interface DeleteProductInput {
     productId: string
+}
+
+interface AssociateImageInput {
+    productId: string
+    imageUrls: string[]
+    imageType: ImageType
+    mode?: ImageAssociationMode
 }
 
 // --- Server Functions ---
@@ -216,3 +225,65 @@ export const getMyProductsFn = createServerFn({ method: "GET" })
             products: result.products.map(toSerializable)
         }
     })
+
+/**
+ * Associate image URLs with a product (Supplier/Admin only)
+ * Suppliers can only associate images to their own products
+ * Admins can associate images to any product
+ */
+export const associateImageFn = createServerFn({ method: "POST" })
+    .inputValidator((data: AssociateImageInput) => data)
+    .handler(async ({ data }) => {
+        const { requireRole } = await import('./auth-utils')
+        const { 
+            getProductById, 
+            associateImages, 
+            isProductOwner, 
+            validateFirebaseStorageUrl,
+            stripCostField, 
+            toSerializable 
+        } = await import('./product-utils')
+        
+        // Only suppliers and admins can associate images
+        const user = await requireRole(['supplier', 'admin'])
+        
+        const { productId, imageUrls, imageType, mode } = data
+        
+        // Validate image URLs (optional - warn but don't block)
+        const invalidUrls = imageUrls.filter(url => !validateFirebaseStorageUrl(url))
+        if (invalidUrls.length > 0) {
+            console.warn(`[associateImageFn] Non-Firebase Storage URLs detected: ${invalidUrls.join(', ')}`)
+        }
+        
+        // Check if product exists
+        const existingProduct = await getProductById(productId)
+        if (!existingProduct) {
+            throw new Error('Product not found')
+        }
+        
+        // Check authorization: admin can update any, supplier only their own
+        if (user.role !== 'admin') {
+            const isOwner = await isProductOwner(productId, user.id)
+            if (!isOwner) {
+                throw new Error('Access denied: You can only modify your own products')
+            }
+        }
+        
+        const updatedProduct = await associateImages(productId, {
+            imageUrls,
+            imageType,
+            mode
+        })
+        
+        if (!updatedProduct) {
+            throw new Error('Failed to associate images with product')
+        }
+        
+        // Admin sees full product (serialized), others see filtered
+        if (user.role === 'admin') {
+            return { product: toSerializable(updatedProduct), success: true }
+        }
+        
+        return { product: stripCostField(updatedProduct), success: true }
+    })
+
