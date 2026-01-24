@@ -52,9 +52,12 @@ describe('Gemini Client', () => {
         expect(GEMINI_IMAGE_MODEL).toBe('gemini-3-pro-image-preview')
     })
 
-    it('should export ai client instance', async () => {
-        const { ai } = await import('./client')
-        expect(ai).toBeDefined()
+    it('should export getGeminiClient function', async () => {
+        const { getGeminiClient } = await import('./client')
+        expect(getGeminiClient).toBeDefined()
+        const client = getGeminiClient()
+        expect(client).toBeDefined()
+        expect(client.models).toBeDefined()
     })
 })
 

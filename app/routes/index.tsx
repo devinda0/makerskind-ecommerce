@@ -19,7 +19,7 @@ function HomePage() {
                         makers from around the world. Each piece tells a story.
                     </p>
                     <div className="hero-actions">
-                        <Link to="/" className="hero-btn-primary">
+                        <Link to="/products" className="hero-btn-primary">
                             Shop Collection
                         </Link>
                         <Link to="/" className="hero-btn-secondary">

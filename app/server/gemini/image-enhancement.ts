@@ -1,4 +1,4 @@
-import { ai, GEMINI_IMAGE_MODEL } from './client'
+import { getGeminiClient, GEMINI_IMAGE_MODEL } from './client'
 import { bucket } from '../firebase/admin'
 
 /**
@@ -84,7 +84,8 @@ export async function enhanceWithGemini(
         },
     ]
     
-    const response = await ai.models.generateContent({
+    const client = getGeminiClient()
+    const response = await client.models.generateContent({
         model: GEMINI_IMAGE_MODEL,
         contents: prompt,
     })

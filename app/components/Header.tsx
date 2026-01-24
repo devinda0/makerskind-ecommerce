@@ -64,7 +64,7 @@ export default function Header() {
                         <Link to="/">Home</Link>
                     </div>
                     <div className="nav-item">
-                        <Link to="/">Products</Link>
+                        <Link to="/products">Products</Link>
                     </div>
                 </nav>
 
@@ -114,7 +114,7 @@ export default function Header() {
             <div className={`mobile-menu ${isMobileMenuOpen ? 'active' : ''}`}>
                 <nav className="mobile-nav">
                     <Link to="/" className="mobile-nav-item">Home</Link>
-                    <Link to="/" className="mobile-nav-item">Products</Link>
+                    <Link to="/products" className="mobile-nav-item">Products</Link>
                 </nav>
 
                 <div className="mobile-auth">
