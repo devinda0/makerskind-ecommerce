@@ -19,6 +19,7 @@
     "@tanstack/router-plugin": "1.140.5",
     "better-auth": "^1.4.15",
     "dotenv": "^17.2.3",
+    "firebase": "^12.8.0",
     "firebase-admin": "^13.6.0",
     "lucide-react": "^0.561.0",
     "mongodb": "^7.0.0",
