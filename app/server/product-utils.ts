@@ -229,6 +229,14 @@ export async function getProductsBySupplier(supplierId: string): Promise<WithId<
 }
 
 /**
+ * Get count of products for a supplier
+ */
+export async function getSupplierProductCount(supplierId: string): Promise<number> {
+    const collection = await getProductCollection()
+    return await collection.countDocuments({ supplierId })
+}
+
+/**
  * Get paginated list of products with optional filters
  */
 export async function getProductList(
