@@ -55,28 +55,28 @@ export async function getAuth() {
 // Helper object for direct API access (server-side only)
 export const auth = {
     api: {
-        signUpEmail: async (opts: { body: any; headers: Headers }) => {
+        signUpEmail: async (opts: any) => {
             const authInstance = await getAuth();
             return authInstance.api.signUpEmail(opts);
         },
-        signInEmail: async (opts: { body: any; headers: Headers }) => {
+        signInEmail: async (opts: any) => {
             const authInstance = await getAuth();
             return authInstance.api.signInEmail(opts);
         },
-        signOut: async (opts: { headers: Headers }) => {
+        signOut: async (opts: any) => {
             const authInstance = await getAuth();
             return authInstance.api.signOut(opts);
         },
-        getSession: async (opts: { headers: Headers }) => {
+        getSession: async (opts: any) => {
             const authInstance = await getAuth();
             return authInstance.api.getSession(opts);
         },
-        signInAnonymous: async (opts: { headers: Headers }) => {
+        signInAnonymous: async (opts: any) => {
             const authInstance = await getAuth();
             // @ts-expect-error - anonymous plugin adds this method
             return authInstance.api.signInAnonymous(opts);
         },
-        deleteAnonymousUser: async (opts: { headers: Headers }) => {
+        deleteAnonymousUser: async (opts: any) => {
             const authInstance = await getAuth();
             // @ts-expect-error - anonymous plugin adds this method
             return authInstance.api.deleteAnonymousUser(opts);

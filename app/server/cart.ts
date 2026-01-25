@@ -187,14 +187,8 @@ export const signInAsGuest = createServerFn({ method: "POST" })
         const { auth } = await import('./auth-config')
         const request = getRequest()
         
-        const result = await auth.api.signInAnonymous({ headers: request.headers })
-        
-        if (!result?.user) {
-            throw new Error('Failed to create anonymous session')
-        }
-        
-        return {
-            user: result.user,
-            isAnonymous: true
-        }
+        return await auth.api.signInAnonymous({
+            headers: request.headers,
+            asResponse: true
+        })
     })

@@ -27,7 +27,11 @@ export default function Header() {
         const fetchSession = async () => {
             try {
                 const result = await getSession()
-                setSession(result as UserSession | null)
+                let data = result
+                if (result instanceof Response) {
+                    data = await result.json()
+                }
+                setSession(data as UserSession | null)
             } catch {
                 setSession(null)
             } finally {
@@ -93,7 +97,9 @@ export default function Header() {
                         <span className="header-link">Loading...</span>
                     ) : session?.user ? (
                         <div className="user-info">
-                            <span className="user-name">{session.user.name || session.user.email}</span>
+                            <Link to="/profile" className="user-name">
+                                {session.user.name || session.user.email}
+                            </Link>
                             <button onClick={handleSignOut} className="sign-out-btn">
                                 Sign Out
                             </button>
@@ -141,7 +147,9 @@ export default function Header() {
                         <span className="header-link">Loading...</span>
                     ) : session?.user ? (
                         <div className="mobile-user-info">
-                            <span className="user-name">{session.user.name || session.user.email}</span>
+                            <Link to="/profile" className="user-name">
+                                {session.user.name || session.user.email}
+                            </Link>
                             <button onClick={handleSignOut} className="sign-out-btn mobile-sign-out">
                                 Sign Out
                             </button>
