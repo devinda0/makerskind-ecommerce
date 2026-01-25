@@ -26,7 +26,8 @@ export const signUp = createServerFn({ method: "POST" })
         const { auth } = await import('./auth-config')
         return await auth.api.signUpEmail({
             body: data,
-            headers: request.headers
+            headers: request.headers,
+            asResponse: true,
         })
     })
 
@@ -37,7 +38,8 @@ export const signIn = createServerFn({ method: "POST" })
         const { auth } = await import('./auth-config')
         return await auth.api.signInEmail({
             body: data,
-            headers: request.headers
+            headers: request.headers,
+            asResponse: true,
         })
     })
 
@@ -46,7 +48,8 @@ export const signOut = createServerFn({ method: "POST" })
         const request = getRequest()
         const { auth } = await import('./auth-config')
         return await auth.api.signOut({
-            headers: request.headers
+            headers: request.headers,
+            asResponse: true,
         })
     })
 
@@ -55,7 +58,8 @@ export const getSession = createServerFn({ method: "GET" })
         const request = getRequest()
         const { auth } = await import('./auth-config')
         return await auth.api.getSession({
-            headers: request.headers
+            headers: request.headers,
+            asResponse: true,
         })
     })
 
@@ -83,6 +87,7 @@ export const signInAnonymous = createServerFn({ method: "POST" })
         const request = getRequest()
         const { auth } = await import('./auth-config')
         return await auth.api.signInAnonymous({
-            headers: request.headers
+            headers: request.headers,
+            asResponse: true,
         })
     })

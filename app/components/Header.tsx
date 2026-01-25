@@ -27,7 +27,11 @@ export default function Header() {
         const fetchSession = async () => {
             try {
                 const result = await getSession()
-                setSession(result as UserSession | null)
+                let data = result
+                if (result instanceof Response) {
+                    data = await result.json()
+                }
+                setSession(data as UserSession | null)
             } catch {
                 setSession(null)
             } finally {
