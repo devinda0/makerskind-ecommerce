@@ -41,7 +41,45 @@ interface RefineImageInput {
     originalImageUrl: string
 }
 
+interface UploadImageInput {
+    filename: string
+    contentType: string
+    content: string
+}
+
 // --- Server Functions ---
+
+/**
+ * Upload an image to Firebase Storage (Server-side)
+ * Uses firebase-admin to bypass client-side auth restrictions
+ */
+export const uploadProductImageFn = createServerFn({ method: "POST" })
+    .inputValidator((data: UploadImageInput) => data)
+    .handler(async ({ data }) => {
+        const { requireRole } = await import('./auth-utils')
+        const { bucket } = await import('./firebase/admin')
+        
+        // Only suppliers and admins can upload
+        await requireRole(['supplier', 'admin'])
+        
+        const buffer = Buffer.from(data.content, 'base64')
+        // Sanitize filename
+        const safeFilename = data.filename.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const path = `products/uploads/${Date.now()}_${safeFilename}`
+        const file = bucket.file(path)
+        
+        await file.save(buffer, {
+            metadata: {
+                contentType: data.contentType,
+            },
+        })
+        
+        await file.makePublic()
+        // Construct public URL
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${path}`
+        
+        return { url: publicUrl, success: true }
+    })
 
 /**
  * Create a new product (Supplier/Admin only)
