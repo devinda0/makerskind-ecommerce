@@ -185,19 +185,16 @@ export const clearCart = createServerFn({ method: "POST" })
 export const signInAsGuest = createServerFn({ method: "POST" })
     .handler(async () => {
         const { auth } = await import('./auth-config')
-        const { getAuthSession } = await import('./auth-utils')
         const request = getRequest()
         
-        await auth.api.signInAnonymous({ headers: request.headers })
+        const result = await auth.api.signInAnonymous({ headers: request.headers })
         
-        const session = await getAuthSession()
-        
-        if (!session?.user) {
+        if (!result?.user) {
             throw new Error('Failed to create anonymous session')
         }
         
         return {
-            user: session.user,
+            user: result.user,
             isAnonymous: true
         }
     })

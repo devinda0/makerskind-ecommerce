@@ -41,8 +41,14 @@ export const createOrderFn = createServerFn({ method: "POST" })
         
         // If no session, sign in anonymously
         if (!session?.user) {
-            await auth.api.signInAnonymous({ headers: request.headers })
-            session = await getAuthSession()
+            const result = await auth.api.signInAnonymous({ headers: request.headers })
+            if (result) {
+                // BetterAuth user structure matches our needs here
+                session = {
+                    user: result.user,
+                    session: result.session
+                }
+            }
         }
         
         if (!session?.user) {
