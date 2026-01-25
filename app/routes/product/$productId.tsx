@@ -2,8 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import { getProductByIdFn } from '../../server/product'
-import { addToCart } from '../../server/cart'
-import { useServerFn } from '@tanstack/react-start'
+// import { addToCart } from '../../server/cart'
+// import { useServerFn } from '@tanstack/react-start'
+import { useCartStore } from '../../hooks/useCartStore'
 import { useState } from 'react'
 
 // --- Types ---
@@ -62,7 +63,8 @@ function ProductDetailPage() {
     const product = data.product
     
     // Server Function Hook
-    const addToCartFn = useServerFn(addToCart)
+    // const addToCartFn = useServerFn(addToCart)
+    const { addItem } = useCartStore()
     
     const [isAdding, setIsAdding] = useState(false)
     const [added, setAdded] = useState(false)
@@ -84,7 +86,17 @@ function ProductDetailPage() {
     const handleAddToCart = async () => {
         setIsAdding(true)
         try {
-            await addToCartFn({ data: { productId: product._id } })
+            // await addToCartFn({ data: { productId: product._id } })
+            // Determine main image for cart
+            const cartImage = product.images.enhanced?.[0] || product.images.original?.[0]
+            
+            addItem({
+                id: product._id,
+                name: product.name,
+                price: product.pricing.selling,
+                image: cartImage,
+            })
+
             setAdded(true)
             setTimeout(() => setAdded(false), 3000)
         } catch (error) {

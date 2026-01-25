@@ -1,6 +1,9 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { getSession, signOut } from '../server/auth'
+import { ShoppingBag } from 'lucide-react'
+import { useCartStore } from '../hooks/useCartStore'
+import { CartPopup } from './CartPopup'
 
 import './Header.css'
 
@@ -17,6 +20,8 @@ export default function Header() {
     const [session, setSession] = useState<UserSession | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { items, toggleCart } = useCartStore()
+    const cartItemCount = items.reduce((acc, item) => acc + item.quantity, 0)
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -70,6 +75,20 @@ export default function Header() {
 
                 {/* Desktop Auth Actions */}
                 <div className="auth-actions desktop-auth">
+                    {/* Cart Button */}
+                    <div className="cart-btn-wrapper">
+                        <button 
+                            className="cart-btn" 
+                            onClick={toggleCart}
+                            aria-label="Open cart"
+                        >
+                            <ShoppingBag size={20} />
+                            {cartItemCount > 0 && (
+                                <span className="cart-badge">{cartItemCount}</span>
+                            )}
+                        </button>
+                    </div>
+
                     {isLoading ? (
                         <span className="header-link">Loading...</span>
                     ) : session?.user ? (
@@ -139,6 +158,8 @@ export default function Header() {
                     )}
                 </div>
             </div>
+            
+            <CartPopup />
         </>
     )
 }
