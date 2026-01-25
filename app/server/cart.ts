@@ -33,8 +33,16 @@ export const getCart = createServerFn({ method: "GET" })
         
         // If no session, sign in anonymously
         if (!session?.user) {
-            await auth.api.signInAnonymous({ headers: request.headers })
-            session = await getAuthSession()
+            const newSession = await auth.api.signInAnonymous({ headers: request.headers })
+            if (newSession) {
+                session = { 
+                    session: newSession.session, 
+                    user: { 
+                        ...newSession.user,
+                        role: newSession.user.role as any
+                    } 
+                }
+            }
         }
         
         if (!session?.user) {
@@ -64,8 +72,16 @@ export const addToCart = createServerFn({ method: "POST" })
         
         // If no session, sign in anonymously
         if (!session?.user) {
-            await auth.api.signInAnonymous({ headers: request.headers })
-            session = await getAuthSession()
+            const newSession = await auth.api.signInAnonymous({ headers: request.headers })
+            if (newSession) {
+                session = { 
+                    session: newSession.session, 
+                    user: { 
+                        ...newSession.user,
+                        role: newSession.user.role as any
+                    } 
+                }
+            }
         }
         
         if (!session?.user) {
