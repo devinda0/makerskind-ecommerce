@@ -12,7 +12,8 @@ export function ProductCard({ product }: ProductCardProps) {
     
     return (
         <Link 
-            to="/products" 
+            to="/product/$productId"
+            params={{ productId: product._id }} 
             className="product-card"
             aria-label={`View ${product.name}`}
         >
