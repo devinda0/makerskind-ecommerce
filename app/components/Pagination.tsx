@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
+import type { ProductStatus } from '../server/product-utils'
 
 interface PaginationProps {
     currentPage: number
     totalPages: number
     search?: string
-    status?: string
+    status?: ProductStatus
 }
 
 export function Pagination({ currentPage, totalPages, search, status }: PaginationProps) {
