@@ -329,6 +329,42 @@ export async function getOrdersBySupplier(
 }
 
 /**
+ * Get total sales for a specific supplier
+ * Calculates sum of (quantity * unitPrice) for all items belonging to the supplier
+ * Excludes cancelled orders
+ */
+export async function getSupplierTotalSales(supplierId: string): Promise<number> {
+    const collection = await getOrderCollection()
+    
+    const result = await collection.aggregate([
+        // Match orders that contain at least one item from this supplier and are not cancelled
+        { 
+            $match: { 
+                'items.supplierId': supplierId,
+                status: { $ne: 'cancelled' }
+            } 
+        },
+        // Unwind items array to process individual items
+        { $unwind: '$items' },
+        // Filter only items belonging to this supplier
+        { 
+            $match: { 
+                'items.supplierId': supplierId 
+            } 
+        },
+        // Sum up the sales amount
+        { 
+            $group: { 
+                _id: null, 
+                totalSales: { $sum: { $multiply: ['$items.quantity', '$items.unitPrice'] } } 
+            } 
+        }
+    ]).toArray()
+    
+    return result[0]?.totalSales || 0
+}
+
+/**
  * Get all orders (Admin only) with pagination
  */
 export async function getAllOrders(
