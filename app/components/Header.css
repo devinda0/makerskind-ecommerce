@@ -154,6 +154,13 @@
     font-size: 0.9rem;
     color: #3d3027;
     font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.user-name:hover {
+    color: #8b5e3c;
+    text-decoration: underline;
 }
 
 .sign-out-btn {
