@@ -15,8 +15,10 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SupplierIndexRouteImport } from './routes/supplier/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SupplierProductsRouteImport } from './routes/supplier/products'
 import { Route as ProductProductIdRouteImport } from './routes/product/$productId'
 import { Route as SupplierProductsIndexRouteImport } from './routes/supplier/products/index'
@@ -52,6 +54,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,6 +68,11 @@ const SupplierIndexRoute = SupplierIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SupplierRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SupplierProductsRoute = SupplierProductsRouteImport.update({
   id: '/products',
@@ -85,6 +97,7 @@ const SupplierProductsNewRoute = SupplierProductsNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
@@ -93,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/supplier': typeof SupplierRouteWithChildren
   '/product/$productId': typeof ProductProductIdRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
@@ -105,6 +119,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/admin': typeof AdminIndexRoute
   '/supplier': typeof SupplierIndexRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products': typeof SupplierProductsIndexRoute
@@ -112,6 +127,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
@@ -120,6 +136,7 @@ export interface FileRoutesById {
   '/supplier': typeof SupplierRouteWithChildren
   '/product/$productId': typeof ProductProductIdRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
+  '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
@@ -128,6 +145,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/checkout'
     | '/login'
     | '/products'
@@ -136,6 +154,7 @@ export interface FileRouteTypes {
     | '/supplier'
     | '/product/$productId'
     | '/supplier/products'
+    | '/admin/'
     | '/supplier/'
     | '/supplier/products/new'
     | '/supplier/products/'
@@ -148,12 +167,14 @@ export interface FileRouteTypes {
     | '/profile'
     | '/register'
     | '/product/$productId'
+    | '/admin'
     | '/supplier'
     | '/supplier/products/new'
     | '/supplier/products'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/checkout'
     | '/login'
     | '/products'
@@ -162,6 +183,7 @@ export interface FileRouteTypes {
     | '/supplier'
     | '/product/$productId'
     | '/supplier/products'
+    | '/admin/'
     | '/supplier/'
     | '/supplier/products/new'
     | '/supplier/products/'
@@ -169,6 +191,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRoute
@@ -222,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -235,6 +265,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/supplier/'
       preLoaderRoute: typeof SupplierIndexRouteImport
       parentRoute: typeof SupplierRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/supplier/products': {
       id: '/supplier/products'
@@ -267,6 +304,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface SupplierProductsRouteChildren {
   SupplierProductsNewRoute: typeof SupplierProductsNewRoute
   SupplierProductsIndexRoute: typeof SupplierProductsIndexRoute
@@ -296,6 +343,7 @@ const SupplierRouteWithChildren = SupplierRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
   ProductsRoute: ProductsRoute,
