@@ -1,10 +1,9 @@
+
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
-import { getProductByIdFn } from '../../server/product'
-// import { addToCart } from '../../server/cart'
-// import { useServerFn } from '@tanstack/react-start'
-import { useCartStore } from '../../hooks/useCartStore'
+import { getProductByIdFn } from '../server/product'
+import { useCartStore } from '../hooks/useCartStore'
 import { useState } from 'react'
 
 // --- Types ---
@@ -17,7 +16,8 @@ const productQueryOptions = (productId: string) => ({
     staleTime: 60 * 1000, 
 })
 
-export const Route = createFileRoute('/product/$productId')({
+
+export const Route = createFileRoute('/_public/product/$productId')({
     loader: async ({ context, params }) => {
         const queryClient = context.queryClient as QueryClient
         return await queryClient.ensureQueryData(productQueryOptions(params.productId))
@@ -55,7 +55,7 @@ export const Route = createFileRoute('/product/$productId')({
 
 // --- Icons ---
 import { ShoppingBag, ArrowLeft, ShieldCheck, Truck, Clock } from 'lucide-react'
-import './ProductDetail.css'
+import './_public.ProductDetail.css'
 
 function ProductDetailPage() {
     const params = Route.useParams()

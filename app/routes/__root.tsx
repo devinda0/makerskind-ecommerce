@@ -3,8 +3,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+
 
 import appCss from '../styles.css?url'
 
@@ -45,11 +44,7 @@ function RootComponent() {
     <RootDocument>
         <QueryClientProvider client={queryClient}>
             <div className="app-container">
-                <Header />
-                <main className="main-content">
-                    <Outlet />
-                </main>
-                <Footer />
+                <Outlet />
             </div>
             <TanStackDevtools
                 config={{
