@@ -6,9 +6,9 @@ import { createOrderFn } from '../server/order'
 import { getCurrentUser } from '../server/auth'
 import { useCartStore } from '../hooks/useCartStore'
 import type { ShippingAddress } from '../server/order-utils'
-import './checkout.css'
+import './_public.checkout.css'
 
-export const Route = createFileRoute('/checkout')({
+export const Route = createFileRoute('/_public/checkout')({
   component: CheckoutPage,
   loader: async () => {
     const user = await getCurrentUser()

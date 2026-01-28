@@ -3,9 +3,9 @@ import { getUserProfileFn } from '../server/user'
 import { getMyOrdersFn } from '../server/order'
 import { AddressForm } from '../components/AddressForm'
 import { OrderList } from '../components/OrderList'
-import './profile.css'
+import './_public.profile.css'
 
-export const Route = createFileRoute('/profile')({
+export const Route = createFileRoute('/_public/profile')({
     loader: async () => {
         try {
             const [user, ordersData] = await Promise.all([

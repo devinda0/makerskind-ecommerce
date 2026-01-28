@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import './Home.css'
+import './_public.Home.css'
 
-export const Route = createFileRoute('/')({ component: HomePage })
+export const Route = createFileRoute('/_public/')({ component: HomePage })
 
 function HomePage() {
     return (

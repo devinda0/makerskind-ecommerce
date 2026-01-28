@@ -5,7 +5,7 @@ import { ProductGrid } from '../components/ProductGrid'
 import { FilterBar } from '../components/FilterBar'
 import { Pagination } from '../components/Pagination'
 import type { ProductStatus } from '../server/product-utils'
-import './Products.css'
+import './_public.Products.css'
 
 // Search params type
 interface ProductsSearch {
@@ -28,7 +28,7 @@ const productsQueryOptions = (params: ProductsSearch) => ({
     staleTime: 60 * 1000, // 1 minute
 })
 
-export const Route = createFileRoute('/products')({
+export const Route = createFileRoute('/_public/products')({
     validateSearch: (search): ProductsSearch => ({
         page: typeof search.page === 'number' ? search.page : undefined,
         search: typeof search.search === 'string' ? search.search : undefined,

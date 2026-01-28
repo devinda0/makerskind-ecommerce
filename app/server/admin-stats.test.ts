@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { calculateFinancialStats } from './admin-stats'
+import { calculateFinancialStats } from './admin-stats.server.ts'
 
 // Mock dependencies
 vi.mock('./auth-utils', () => ({

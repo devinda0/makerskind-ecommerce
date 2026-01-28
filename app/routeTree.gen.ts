@@ -10,48 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SupplierRouteImport } from './routes/supplier'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ProductsRouteImport } from './routes/products'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicRouteImport } from './routes/_public'
 import { Route as SupplierIndexRouteImport } from './routes/supplier/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as PublicIndexRouteImport } from './routes/_public.index'
 import { Route as SupplierProductsRouteImport } from './routes/supplier/products'
-import { Route as ProductProductIdRouteImport } from './routes/product/$productId'
+import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
+import { Route as PublicRegisterRouteImport } from './routes/_public.register'
+import { Route as PublicProfileRouteImport } from './routes/_public.profile'
+import { Route as PublicProductsRouteImport } from './routes/_public.products'
+import { Route as PublicLoginRouteImport } from './routes/_public.login'
+import { Route as PublicCheckoutRouteImport } from './routes/_public.checkout'
 import { Route as SupplierProductsIndexRouteImport } from './routes/supplier/products/index'
 import { Route as SupplierProductsNewRouteImport } from './routes/supplier/products/new'
+import { Route as PublicProductProductIdRouteImport } from './routes/_public.product.$productId'
 
 const SupplierRoute = SupplierRouteImport.update({
   id: '/supplier',
   path: '/supplier',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -59,9 +36,8 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupplierIndexRoute = SupplierIndexRouteImport.update({
@@ -74,15 +50,45 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicRoute,
+} as any)
 const SupplierProductsRoute = SupplierProductsRouteImport.update({
   id: '/products',
   path: '/products',
   getParentRoute: () => SupplierRoute,
 } as any)
-const ProductProductIdRoute = ProductProductIdRouteImport.update({
-  id: '/product/$productId',
-  path: '/product/$productId',
-  getParentRoute: () => rootRouteImport,
+const AdminInventoryRoute = AdminInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AdminRoute,
+} as any)
+const PublicRegisterRoute = PublicRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicProfileRoute = PublicProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicProductsRoute = PublicProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLoginRoute = PublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicCheckoutRoute = PublicCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => PublicRoute,
 } as any)
 const SupplierProductsIndexRoute = SupplierProductsIndexRouteImport.update({
   id: '/',
@@ -94,111 +100,118 @@ const SupplierProductsNewRoute = SupplierProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => SupplierProductsRoute,
 } as any)
+const PublicProductProductIdRoute = PublicProductProductIdRouteImport.update({
+  id: '/product/$productId',
+  path: '/product/$productId',
+  getParentRoute: () => PublicRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/checkout': typeof CheckoutRoute
-  '/login': typeof LoginRoute
-  '/products': typeof ProductsRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
   '/supplier': typeof SupplierRouteWithChildren
-  '/product/$productId': typeof ProductProductIdRoute
+  '/checkout': typeof PublicCheckoutRoute
+  '/login': typeof PublicLoginRoute
+  '/products': typeof PublicProductsRoute
+  '/profile': typeof PublicProfileRoute
+  '/register': typeof PublicRegisterRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
+  '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
+  '/product/$productId': typeof PublicProductProductIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRoute
-  '/login': typeof LoginRoute
-  '/products': typeof ProductsRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
-  '/product/$productId': typeof ProductProductIdRoute
+  '/checkout': typeof PublicCheckoutRoute
+  '/login': typeof PublicLoginRoute
+  '/products': typeof PublicProductsRoute
+  '/profile': typeof PublicProfileRoute
+  '/register': typeof PublicRegisterRoute
+  '/admin/inventory': typeof AdminInventoryRoute
+  '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
   '/supplier': typeof SupplierIndexRoute
+  '/product/$productId': typeof PublicProductProductIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products': typeof SupplierProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_public': typeof PublicRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
-  '/checkout': typeof CheckoutRoute
-  '/login': typeof LoginRoute
-  '/products': typeof ProductsRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
   '/supplier': typeof SupplierRouteWithChildren
-  '/product/$productId': typeof ProductProductIdRoute
+  '/_public/checkout': typeof PublicCheckoutRoute
+  '/_public/login': typeof PublicLoginRoute
+  '/_public/products': typeof PublicProductsRoute
+  '/_public/profile': typeof PublicProfileRoute
+  '/_public/register': typeof PublicRegisterRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
+  '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
+  '/_public/product/$productId': typeof PublicProductProductIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/admin'
+    | '/supplier'
     | '/checkout'
     | '/login'
     | '/products'
     | '/profile'
     | '/register'
-    | '/supplier'
-    | '/product/$productId'
+    | '/admin/inventory'
     | '/supplier/products'
+    | '/'
     | '/admin/'
     | '/supplier/'
+    | '/product/$productId'
     | '/supplier/products/new'
     | '/supplier/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/checkout'
     | '/login'
     | '/products'
     | '/profile'
     | '/register'
-    | '/product/$productId'
+    | '/admin/inventory'
+    | '/'
     | '/admin'
     | '/supplier'
+    | '/product/$productId'
     | '/supplier/products/new'
     | '/supplier/products'
   id:
     | '__root__'
-    | '/'
+    | '/_public'
     | '/admin'
-    | '/checkout'
-    | '/login'
-    | '/products'
-    | '/profile'
-    | '/register'
     | '/supplier'
-    | '/product/$productId'
+    | '/_public/checkout'
+    | '/_public/login'
+    | '/_public/products'
+    | '/_public/profile'
+    | '/_public/register'
+    | '/admin/inventory'
     | '/supplier/products'
+    | '/_public/'
     | '/admin/'
     | '/supplier/'
+    | '/_public/product/$productId'
     | '/supplier/products/new'
     | '/supplier/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PublicRoute: typeof PublicRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
-  CheckoutRoute: typeof CheckoutRoute
-  LoginRoute: typeof LoginRoute
-  ProductsRoute: typeof ProductsRoute
-  ProfileRoute: typeof ProfileRoute
-  RegisterRoute: typeof RegisterRoute
   SupplierRoute: typeof SupplierRouteWithChildren
-  ProductProductIdRoute: typeof ProductProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -210,41 +223,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplierRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products': {
-      id: '/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -252,11 +230,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/supplier/': {
@@ -273,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_public/': {
+      id: '/_public/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/supplier/products': {
       id: '/supplier/products'
       path: '/products'
@@ -280,12 +265,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplierProductsRouteImport
       parentRoute: typeof SupplierRoute
     }
-    '/product/$productId': {
-      id: '/product/$productId'
-      path: '/product/$productId'
-      fullPath: '/product/$productId'
-      preLoaderRoute: typeof ProductProductIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/admin/inventory': {
+      id: '/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AdminInventoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_public/register': {
+      id: '/_public/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof PublicRegisterRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/profile': {
+      id: '/_public/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PublicProfileRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/products': {
+      id: '/_public/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof PublicProductsRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/login': {
+      id: '/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/checkout': {
+      id: '/_public/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof PublicCheckoutRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/supplier/products/': {
       id: '/supplier/products/'
@@ -301,14 +321,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplierProductsNewRouteImport
       parentRoute: typeof SupplierProductsRoute
     }
+    '/_public/product/$productId': {
+      id: '/_public/product/$productId'
+      path: '/product/$productId'
+      fullPath: '/product/$productId'
+      preLoaderRoute: typeof PublicProductProductIdRouteImport
+      parentRoute: typeof PublicRoute
+    }
   }
 }
 
+interface PublicRouteChildren {
+  PublicCheckoutRoute: typeof PublicCheckoutRoute
+  PublicLoginRoute: typeof PublicLoginRoute
+  PublicProductsRoute: typeof PublicProductsRoute
+  PublicProfileRoute: typeof PublicProfileRoute
+  PublicRegisterRoute: typeof PublicRegisterRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+  PublicProductProductIdRoute: typeof PublicProductProductIdRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicCheckoutRoute: PublicCheckoutRoute,
+  PublicLoginRoute: PublicLoginRoute,
+  PublicProductsRoute: PublicProductsRoute,
+  PublicProfileRoute: PublicProfileRoute,
+  PublicRegisterRoute: PublicRegisterRoute,
+  PublicIndexRoute: PublicIndexRoute,
+  PublicProductProductIdRoute: PublicProductProductIdRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 interface AdminRouteChildren {
+  AdminInventoryRoute: typeof AdminInventoryRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminInventoryRoute: AdminInventoryRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -342,15 +394,9 @@ const SupplierRouteWithChildren = SupplierRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PublicRoute: PublicRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
-  CheckoutRoute: CheckoutRoute,
-  LoginRoute: LoginRoute,
-  ProductsRoute: ProductsRoute,
-  ProfileRoute: ProfileRoute,
-  RegisterRoute: RegisterRoute,
   SupplierRoute: SupplierRouteWithChildren,
-  ProductProductIdRoute: ProductProductIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
