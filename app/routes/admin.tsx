@@ -52,7 +52,7 @@ function AdminLayout() {
               Inventory
             </AdminNavLink>
             
-            <AdminNavLink to="/admin" icon={<ShoppingCart className="h-5 w-5" />}>
+            <AdminNavLink to="/admin/orders" icon={<ShoppingCart className="h-5 w-5" />}>
               Orders
             </AdminNavLink>
             
