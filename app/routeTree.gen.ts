@@ -16,6 +16,7 @@ import { Route as SupplierIndexRouteImport } from './routes/supplier/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public.index'
 import { Route as SupplierProductsRouteImport } from './routes/supplier/products'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as PublicRegisterRouteImport } from './routes/_public.register'
 import { Route as PublicProfileRouteImport } from './routes/_public.profile'
@@ -59,6 +60,11 @@ const SupplierProductsRoute = SupplierProductsRouteImport.update({
   id: '/products',
   path: '/products',
   getParentRoute: () => SupplierRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminInventoryRoute = AdminInventoryRouteImport.update({
   id: '/inventory',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof PublicProfileRoute
   '/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
   '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/profile': typeof PublicProfileRoute
   '/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
   '/supplier': typeof SupplierIndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/_public/profile': typeof PublicProfileRoute
   '/_public/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/register'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/supplier/products'
     | '/'
     | '/admin/'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/register'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/'
     | '/admin'
     | '/supplier'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/_public/profile'
     | '/_public/register'
     | '/admin/inventory'
+    | '/admin/orders'
     | '/supplier/products'
     | '/_public/'
     | '/admin/'
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/supplier/products'
       preLoaderRoute: typeof SupplierProductsRouteImport
       parentRoute: typeof SupplierRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/inventory': {
       id: '/admin/inventory'
@@ -356,11 +375,13 @@ const PublicRouteWithChildren =
 
 interface AdminRouteChildren {
   AdminInventoryRoute: typeof AdminInventoryRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminInventoryRoute: AdminInventoryRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

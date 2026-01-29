@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getFinancialStatsFn } from '../../server/admin-stats'
 import { Loader2, DollarSign, TrendingUp, ShoppingBag, CreditCard, User, BarChart3 } from 'lucide-react'
@@ -71,13 +71,15 @@ function RouteComponent() {
           trend="+8.1% from last month"
           gradient="from-indigo-500 to-indigo-600"
         />
-        <StatsCard
-          title="Active Orders"
-          value={stats?.orderCount.toString() || '0'}
-          icon={<ShoppingBag className="h-5 w-5 text-white" />}
-          trend="+2 new today"
-          gradient="from-violet-500 to-violet-600"
-        />
+        <Link to="/admin/orders" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+            <StatsCard
+            title="Active Orders"
+            value={stats?.orderCount.toString() || '0'}
+            icon={<ShoppingBag className="h-5 w-5 text-white" />}
+            trend="+2 new today"
+            gradient="from-violet-500 to-violet-600"
+            />
+        </Link>
       </div>
 
       {/* Recent Activity & Charts Section */}
