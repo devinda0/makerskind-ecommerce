@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-table'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { getProductsFn, updateProductFn } from '../../server/product'
+import { getProductsFn, updateProductFn, deleteProductFn } from '../../server/product'
 import { 
   Loader2, 
   Search, 
@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { ProductEditDialog } from '../../components/admin/ProductEditDialog'
 
 // --- Types ---
 type Product = {
@@ -74,6 +75,9 @@ function InventoryPage() {
   const [globalFilter, setGlobalFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<'active' | 'draft' | 'archived' | 'pending_review' | 'rejected' | ''>(search.status || '')
   
+  // Edit State
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  
   // Debounce search (simplified for this implementation, ideally use a hook)
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
@@ -104,6 +108,15 @@ function InventoryPage() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ productId, status }: { productId: string, status: 'active' | 'rejected' }) => {
         await updateProductFn({ data: { productId, status } })
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+    }
+  })
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+        await deleteProductFn({ data: { productId } })
     },
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
@@ -247,11 +260,24 @@ function InventoryPage() {
                     <button className="text-slate-400 hover:text-indigo-600 transition-colors p-1 hover:bg-indigo-50 rounded" title="View Details">
                         <Eye className="h-4 w-4" />
                     </button>
-                    <button className="text-slate-400 hover:text-amber-600 transition-colors p-1 hover:bg-amber-50 rounded" title="Edit">
+                    <button 
+                        onClick={() => setEditingProduct(product)}
+                        className="text-slate-400 hover:text-amber-600 transition-colors p-1 hover:bg-amber-50 rounded" 
+                        title="Edit"
+                    >
                         <Edit className="h-4 w-4" />
                     </button>
-                    <button className="text-slate-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded" title="Delete">
-                        <Trash2 className="h-4 w-4" />
+                    <button 
+                        onClick={() => {
+                            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                                deleteProductMutation.mutate(product._id)
+                            }
+                        }}
+                        className="text-slate-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded" 
+                        title="Delete"
+                        disabled={deleteProductMutation.isPending}
+                    >
+                        {deleteProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </button>
                 </div>
             </div>
@@ -488,6 +514,12 @@ function InventoryPage() {
             </div>
         )}
       </div>
+
+      <ProductEditDialog 
+        product={editingProduct} 
+        isOpen={!!editingProduct} 
+        onClose={() => setEditingProduct(null)} 
+      />
     </div>
   )
 }
