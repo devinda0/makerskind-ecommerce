@@ -17,7 +17,7 @@ export interface ProductImages {
     enhanced: string[]   // AI-enhanced versions of images
 }
 
-export type ProductStatus = 'active' | 'draft' | 'archived'
+export type ProductStatus = 'active' | 'draft' | 'archived' | 'pending_review' | 'rejected'
 
 export interface Product {
     _id?: ObjectId

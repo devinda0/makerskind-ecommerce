@@ -33,7 +33,7 @@ export default function AddProductWizard() {
                         data: {
                             productId,
                             ...value,
-                            status: 'active',
+                            status: 'pending_review',
                              // Ensure images array has what we want logic
                             images: enhancedImageUrl ? [enhancedImageUrl] : (originalImageUrl ? [originalImageUrl] : [])
                         }
@@ -43,7 +43,7 @@ export default function AddProductWizard() {
                     await createProductFn({
                         data: {
                             ...value,
-                            status: 'active',
+                            status: 'pending_review',
                             images: enhancedImageUrl ? [enhancedImageUrl] : (originalImageUrl ? [originalImageUrl] : [])
                         }
                     })
@@ -278,32 +278,6 @@ export default function AddProductWizard() {
                                         <div className="preview-label">Original</div>
                                         <img src={originalImageUrl} alt="Original" className="preview-image" />
                                     </div>
-                                    
-                                    {enhancedImageUrl ? (
-                                        <div className="preview-card">
-                                            <div className="preview-label">
-                                                <span className="ai-badge"><Sparkles size={12} /> Refined by AI</span>
-                                            </div>
-                                            <img src={enhancedImageUrl} alt="Enhanced" className="preview-image" />
-                                        </div>
-                                    ) : (
-                                        <div className="preview-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--gray-50)', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
-                                            <p style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '0.875rem' }}>
-                                                Enhance your product imager with AI for better sales.
-                                            </p>
-                                            <button 
-                                                className="btn btn-primary" 
-                                                onClick={handleRefineImage}
-                                                disabled={refining}
-                                            >
-                                                {refining ? (
-                                                    <><Loader2 size={16} className="animate-spin" style={{ marginRight: '0.5rem', display: 'inline' }} /> Refining...</>
-                                                ) : (
-                                                    <><Sparkles size={16} style={{ marginRight: '0.5rem', display: 'inline' }} /> Refine Image</>
-                                                )}
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             )}
                             
@@ -313,7 +287,6 @@ export default function AddProductWizard() {
                                     style={{ marginTop: '1rem' }}
                                     onClick={() => {
                                         setOriginalImageUrl(null)
-                                        setEnhancedImageUrl(null)
                                         form.setFieldValue('images', [])
                                     }}
                                 >

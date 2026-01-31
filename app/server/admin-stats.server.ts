@@ -1,5 +1,6 @@
 import { requireRole } from './auth-utils'
 import { getOrderCollection } from './order-utils'
+import { getProductCollection } from './product-utils'
 import { type FinancialStats } from './admin-stats-types'
 
 /**
@@ -67,12 +68,17 @@ export async function calculateFinancialStats(): Promise<FinancialStats> {
     // Also get total order count separately
     const totalOrders = await collection.countDocuments({ status: { $ne: 'cancelled' } })
 
+    // Get pending reviews count
+    const productCollection = await getProductCollection()
+    const pendingReviewCount = await productCollection.countDocuments({ status: 'pending_review' })
+
     const stats = result[0] || { revenue: 0, cost: 0, profit: 0, orderCount: 0 }
 
     return {
         revenue: stats.revenue,
         cost: stats.cost,
         profit: stats.profit,
-        orderCount: totalOrders
+        orderCount: totalOrders,
+        pendingReviewCount
     }
 }
