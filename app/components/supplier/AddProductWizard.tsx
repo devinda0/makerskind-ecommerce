@@ -1,19 +1,15 @@
 import { useForm } from '@tanstack/react-form'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { createProductFn, refineImageFn, updateProductFn, uploadProductImageFn } from '../../server/product'
-import { Loader2, Upload, Sparkles, Check, ChevronRight, ChevronLeft } from 'lucide-react'
+import { createProductFn, uploadProductImageFn } from '../../server/product'
+import { Loader2, Upload, Check, ChevronRight, ChevronLeft } from 'lucide-react'
 import './AddProductWizard.css'
 
 export default function AddProductWizard() {
     const navigate = useNavigate()
     const [step, setStep] = useState(1)
-    const [productId, setProductId] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
-    const [refining, setRefining] = useState(false)
     const [submitting, setSubmitting] = useState(false)
-    const [enhancedImageUrl, setEnhancedImageUrl] = useState<string | null>(null)
-    const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null)
 
     const form = useForm({
         defaultValues: {
@@ -27,27 +23,14 @@ export default function AddProductWizard() {
         onSubmit: async ({ value }) => {
             setSubmitting(true)
             try {
-                // If we have an existing product (from refine/draft), update it
-                if (productId) {
-                     await updateProductFn({
-                        data: {
-                            productId,
-                            ...value,
-                            status: 'pending_review',
-                             // Ensure images array has what we want logic
-                            images: enhancedImageUrl ? [enhancedImageUrl] : (originalImageUrl ? [originalImageUrl] : [])
-                        }
-                    })
-                } else {
-                     // Create new product if no draft exists
-                    await createProductFn({
-                        data: {
-                            ...value,
-                            status: 'pending_review',
-                            images: enhancedImageUrl ? [enhancedImageUrl] : (originalImageUrl ? [originalImageUrl] : [])
-                        }
-                    })
-                }
+                // Create new product
+                await createProductFn({
+                    data: {
+                        ...value,
+                        status: 'pending_review',
+                        images: value.images
+                    }
+                })
                 navigate({ to: '/supplier' })
             } catch (error) {
                 console.error('Failed to create product:', error)
@@ -59,17 +42,27 @@ export default function AddProductWizard() {
     })
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
+        const files = e.target.files
+        if (!files || files.length === 0) return
 
         setUploading(true)
         try {
-            // Convert to base64 for server upload
-            const reader = new FileReader()
-            reader.readAsDataURL(file)
-            reader.onload = async () => {
-                const base64Content = (reader.result as string).split(',')[1]
+            const newImageUrls: string[] = []
+            
+            // Log currently existing images
+            const currentImages = form.state.values.images || []
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i]
                 
+                // Convert to base64
+                const base64Content = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve((reader.result as string).split(',')[1])
+                    reader.onerror = reject
+                    reader.readAsDataURL(file)
+                })
+
                 const res = await uploadProductImageFn({
                     data: {
                         filename: file.name,
@@ -79,67 +72,22 @@ export default function AddProductWizard() {
                 })
                 
                 if (res.success) {
-                    setOriginalImageUrl(res.url)
-                    form.setFieldValue('images', [res.url])
+                    newImageUrls.push(res.url)
                 }
-                setUploading(false)
             }
-            reader.onerror = () => {
-                setUploading(false)
-                alert('Failed to read file')
-            }
+            
+            form.setFieldValue('images', [...currentImages, ...newImageUrls])
         } catch (error) {
             console.error('Upload failed:', error)
             alert('Image upload failed. Please try again.')
+        } finally {
             setUploading(false)
         }
     }
 
-    const handleRefineImage = async () => {
-        if (!originalImageUrl) return
-        
-        setRefining(true)
-        try {
-            let currentId = productId
-            
-            // If product doesn't exist yet, create a draft
-            if (!currentId) {
-                const res = await createProductFn({
-                    data: {
-                        ...form.state.values,
-                        status: 'draft',
-                        images: [originalImageUrl]
-                    }
-                })
-                currentId = res.product._id
-                setProductId(currentId)
-            } else {
-                // Ensure image is associated
-                await updateProductFn({
-                    data: {
-                        productId: currentId,
-                        images: [originalImageUrl]
-                    }
-                })
-            }
-
-            // Call AI Refine
-            const res = await refineImageFn({
-                data: {
-                    productId: currentId!,
-                    originalImageUrl: originalImageUrl
-                }
-            })
-            
-            if (res.success && res.enhancedImageUrl) {
-                setEnhancedImageUrl(res.enhancedImageUrl)
-            }
-        } catch (error) {
-            console.error('Refine failed:', error)
-            alert('AI refinement failed. Please try again.')
-        } finally {
-            setRefining(false)
-        }
+    const removeImage = (indexToRemove: number) => {
+        const currentImages = form.state.values.images
+        form.setFieldValue('images', currentImages.filter((_, index) => index !== indexToRemove))
     }
 
     const nextStep = () => setStep(s => Math.min(s + 1, 4))
@@ -248,52 +196,70 @@ export default function AddProductWizard() {
 
                 {step === 3 && (
                     <div className="step-panel">
-                        <div className="form-group">
-                            <label className="form-label">Product Image</label>
-                            
-                            {!originalImageUrl ? (
-                                <div className="image-upload-area" onClick={() => document.getElementById('file-upload')?.click()}>
-                                    <input
-                                        id="file-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={handleFileUpload}
-                                    />
-                                    {uploading ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Loader2 className="animate-spin" />
-                                            <span>Uploading...</span>
+                        <form.Field name="images">
+                            {(field) => (
+                                <div className="form-group">
+                                    <label className="form-label">Product Images ({field.state.value.length})</label>
+                                    
+                                    <div className="image-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                                        {field.state.value.map((url, index) => (
+                                            <div key={index} className="relative group" style={{ position: 'relative', aspectRatio: '1' }}>
+                                                <img 
+                                                    src={url} 
+                                                    alt={`Product ${index + 1}`} 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--gray-200)' }} 
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(index)}
+                                                    className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    style={{ position: 'absolute', top: '4px', right: '4px', cursor: 'pointer' }}
+                                                >
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        <div 
+                                            className="image-upload-area" 
+                                            onClick={() => document.getElementById('file-upload')?.click()}
+                                            style={{ 
+                                                border: '2px dashed var(--gray-300)', 
+                                                borderRadius: '8px', 
+                                                display: 'flex', 
+                                                flexDirection: 'column',
+                                                alignItems: 'center', 
+                                                justifyContent: 'center', 
+                                                aspectRatio: '1',
+                                                cursor: 'pointer',
+                                                backgroundColor: 'var(--gray-50)',
+                                                minHeight: '100px'
+                                            }}
+                                        >
+                                            <input
+                                                id="file-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                style={{ display: 'none' }}
+                                                onChange={handleFileUpload}
+                                            />
+                                            {uploading ? (
+                                                <Loader2 className="animate-spin text-gray-400" />
+                                            ) : (
+                                                <>
+                                                    <Upload size={24} style={{ marginBottom: '0.25rem', color: 'var(--gray-400)' }} />
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>Add Images</span>
+                                                </>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <div>
-                                            <Upload className="mx-auto" size={32} style={{ marginBottom: '0.5rem', color: 'var(--gray-400)' }} />
-                                            <p>Click to upload an image</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="image-preview-container">
-                                    <div className="preview-card">
-                                        <div className="preview-label">Original</div>
-                                        <img src={originalImageUrl} alt="Original" className="preview-image" />
                                     </div>
+                                    <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)' }}>
+                                        Upload multiple images to showcase your product from different angles.
+                                    </p>
                                 </div>
                             )}
-                            
-                            {originalImageUrl && (
-                                <button 
-                                    className="btn btn-secondary" 
-                                    style={{ marginTop: '1rem' }}
-                                    onClick={() => {
-                                        setOriginalImageUrl(null)
-                                        form.setFieldValue('images', [])
-                                    }}
-                                >
-                                    Replace Image
-                                </button>
-                            )}
-                        </div>
+                        </form.Field>
                     </div>
                 )}
 
@@ -319,10 +285,14 @@ export default function AddProductWizard() {
                             </div>
                         </div>
                         
-                        {enhancedImageUrl && (
+                        {form.state.values.images.length > 0 && (
                              <div style={{ marginTop: '1.5rem' }}>
-                                <label className="form-label">Selected Image (AI Enhanced)</label>
-                                <img src={enhancedImageUrl} alt="Final" style={{ height: '150px', borderRadius: '8px', border: '1px solid var(--gray-200)' }} />
+                                <label className="form-label">Product Images</label>
+                                <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                    {form.state.values.images.map((url, i) => (
+                                        <img key={i} src={url} alt="Review" style={{ height: '80px', borderRadius: '4px', border: '1px solid var(--gray-200)' }} />
+                                    ))}
+                                </div>
                              </div>
                         )}
                     </div>
