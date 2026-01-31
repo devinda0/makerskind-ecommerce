@@ -4,4 +4,5 @@ export interface FinancialStats {
     cost: number
     profit: number
     orderCount: number
+    pendingReviewCount: number
 }

@@ -4,7 +4,8 @@ import type {
     CreateProductInput, 
     UpdateProductInput,
     ImageType,
-    ImageAssociationMode
+    ImageAssociationMode,
+    ProductStatus
 } from './product-utils'
 
 // --- Input Types for Server Functions ---
@@ -12,7 +13,7 @@ import type {
 interface GetProductsInput {
     page?: number
     limit?: number
-    status?: 'active' | 'draft' | 'archived'
+    status?: ProductStatus
     supplierId?: string
     search?: string
 }
@@ -92,6 +93,14 @@ export const createProductFn = createServerFn({ method: "POST" })
         
         // Only suppliers and admins can create products
         const user = await requireRole(['supplier', 'admin'])
+
+        // Enforce review workflow for non-admins
+        if (user.role !== 'admin') {
+            // Suppliers cannot create active products directly
+            if (data.status === 'active') {
+                data.status = 'pending_review'
+            }
+        }
         
         const product = await createProduct(user.id, data)
         
@@ -119,7 +128,9 @@ export const getProductsFn = createServerFn({ method: "GET" })
         const result = await getProductList({
             page: data.page,
             limit: data.limit,
-            status: data.status,
+            // Security: Public API defaults to ONLY active products if not specified
+            // And NON-ADMINS can ONLY see active products
+            status: isAdmin ? (data.status || 'active') : 'active',
             supplierId: data.supplierId,
             search: data.search
         })
@@ -190,6 +201,11 @@ export const updateProductFn = createServerFn({ method: "POST" })
             const isOwner = await isProductOwner(productId, user.id)
             if (!isOwner) {
                 throw new Error('Access denied: You can only modify your own products')
+            }
+
+            // Suppliers cannot set status to active directly
+            if (updateData.status === 'active') {
+                throw new Error('Permission denied: Only admins can activate products. Please set status to "pending_review" for approval.')
             }
         }
         

@@ -5,9 +5,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { getProductsFn } from '../../server/product'
+import { getProductsFn, updateProductFn, deleteProductFn } from '../../server/product'
 import { 
   Loader2, 
   Search, 
@@ -19,9 +19,12 @@ import {
   Edit,
   Trash2,
   Lock,
-  Filter
+  Filter,
+  Check,
+  X
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { ProductEditDialog } from '../../components/admin/ProductEditDialog'
 
 // --- Types ---
 type Product = {
@@ -40,23 +43,40 @@ type Product = {
     original: string[]
     enhanced: string[]
   }
-  status: 'active' | 'draft' | 'archived'
+  status: 'active' | 'draft' | 'archived' | 'pending_review' | 'rejected'
   createdAt: string
   updatedAt: string
 }
 
+type InventorySearch = {
+  status?: Product['status']
+}
+
 export const Route = createFileRoute('/admin/inventory')({
   component: InventoryPage,
+  validateSearch: (search: Record<string, unknown>): InventorySearch => {
+    const validStatuses = ['active', 'draft', 'pending_review', 'rejected', 'archived']
+    return {
+      status: validStatuses.includes(search.status as string)
+        ? (search.status as Product['status'])
+        : undefined,
+    }
+  },
 })
 
 function InventoryPage() {
+  const search = Route.useSearch()
+  
   // --- State ---
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   })
   const [globalFilter, setGlobalFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'active' | 'draft' | 'archived' | ''>('')
+  const [statusFilter, setStatusFilter] = useState<'active' | 'draft' | 'archived' | 'pending_review' | 'rejected' | ''>(search.status || '')
+  
+  // Edit State
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   
   // Debounce search (simplified for this implementation, ideally use a hook)
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -81,6 +101,26 @@ function InventoryPage() {
         search: debouncedSearch || undefined
       }
     }),
+  })
+
+  // --- Mutations ---
+  const queryClient = useQueryClient()
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ productId, status }: { productId: string, status: 'active' | 'rejected' }) => {
+        await updateProductFn({ data: { productId, status } })
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+    }
+  })
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+        await deleteProductFn({ data: { productId } })
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+    }
   })
 
   // --- Table Configuration ---
@@ -133,11 +173,15 @@ function InventoryPage() {
                 active: 'bg-emerald-100 text-emerald-700 ring-emerald-600/20',
                 draft: 'bg-amber-100 text-amber-700 ring-amber-600/20',
                 archived: 'bg-slate-100 text-slate-700 ring-slate-600/20',
+                pending_review: 'bg-blue-100 text-blue-700 ring-blue-600/20',
+                rejected: 'bg-red-100 text-red-700 ring-red-600/20',
             }
+            // @ts-ignore
+            const style = styles[status] || styles.draft
             return (
-                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${styles[status]}`}>
-                    <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${status === 'active' ? 'bg-emerald-500' : status === 'draft' ? 'bg-amber-500' : 'bg-slate-500'}`}></span>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${style}`}>
+                    <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${status === 'active' ? 'bg-emerald-500' : status === 'pending_review' ? 'bg-blue-500' : 'bg-slate-500'}`}></span>
+                    {status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                 </span>
             )
         }
@@ -187,19 +231,58 @@ function InventoryPage() {
     columnHelper.display({
       id: 'actions',
       header: '',
-      cell: info => (
-        <div className="flex justify-end space-x-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button className="text-slate-400 hover:text-indigo-600 transition-colors p-1 hover:bg-indigo-50 rounded" title="View Details">
-                <Eye className="h-4 w-4" />
-            </button>
-            <button className="text-slate-400 hover:text-amber-600 transition-colors p-1 hover:bg-amber-50 rounded" title="Edit">
-                <Edit className="h-4 w-4" />
-            </button>
-             <button className="text-slate-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded" title="Delete">
-                <Trash2 className="h-4 w-4" />
-            </button>
-        </div>
-      )
+      cell: info => {
+        const product = info.row.original
+        return (
+            <div className="flex justify-end items-center gap-2">
+                {product.status === 'pending_review' && (
+                    <div className="flex items-center gap-1 mr-2">
+                        <button
+                            onClick={() => updateStatusMutation.mutate({ productId: product._id, status: 'active' })}
+                            className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 p-1.5 rounded-md transition-colors"
+                            title="Approve"
+                            disabled={updateStatusMutation.isPending}
+                        >
+                            {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                        </button>
+                        <button
+                            onClick={() => updateStatusMutation.mutate({ productId: product._id, status: 'rejected' })}
+                            className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 p-1.5 rounded-md transition-colors"
+                            title="Reject"
+                            disabled={updateStatusMutation.isPending}
+                        >
+                            {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                        </button>
+                    </div>
+                )}
+                
+                <div className={`flex space-x-3 transition-opacity duration-200 ${product.status === 'pending_review' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                    <button className="text-slate-400 hover:text-indigo-600 transition-colors p-1 hover:bg-indigo-50 rounded" title="View Details">
+                        <Eye className="h-4 w-4" />
+                    </button>
+                    <button 
+                        onClick={() => setEditingProduct(product)}
+                        className="text-slate-400 hover:text-amber-600 transition-colors p-1 hover:bg-amber-50 rounded" 
+                        title="Edit"
+                    >
+                        <Edit className="h-4 w-4" />
+                    </button>
+                    <button 
+                        onClick={() => {
+                            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                                deleteProductMutation.mutate(product._id)
+                            }
+                        }}
+                        className="text-slate-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded" 
+                        title="Delete"
+                        disabled={deleteProductMutation.isPending}
+                    >
+                        {deleteProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    </button>
+                </div>
+            </div>
+        )
+      }
     })
   ]
 
@@ -293,6 +376,8 @@ function InventoryPage() {
                         <option value="">All Statuses</option>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
+                        <option value="pending_review">Pending Review</option>
+                        <option value="rejected">Rejected</option>
                         <option value="archived">Archived</option>
                     </select>
                 </div>
@@ -429,6 +514,12 @@ function InventoryPage() {
             </div>
         )}
       </div>
+
+      <ProductEditDialog 
+        product={editingProduct} 
+        isOpen={!!editingProduct} 
+        onClose={() => setEditingProduct(null)} 
+      />
     </div>
   )
 }

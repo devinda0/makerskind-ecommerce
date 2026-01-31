@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getFinancialStatsFn } from '../../server/admin-stats'
-import { Loader2, DollarSign, TrendingUp, ShoppingBag, CreditCard, User, BarChart3 } from 'lucide-react'
+import { Loader2, DollarSign, TrendingUp, ShoppingBag, CreditCard, User, BarChart3, ClipboardList } from 'lucide-react'
 
 export const Route = createFileRoute('/admin/')({
   component: RouteComponent,
@@ -78,6 +78,15 @@ function RouteComponent() {
             icon={<ShoppingBag className="h-5 w-5 text-white" />}
             trend="+2 new today"
             gradient="from-violet-500 to-violet-600"
+            />
+        </Link>
+        <Link to="/admin/inventory" search={{ status: 'pending_review' }} className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+            <StatsCard
+            title="Pending Reviews"
+            value={stats?.pendingReviewCount?.toString() || '0'}
+            icon={<ClipboardList className="h-5 w-5 text-white" />}
+            trend="Needs attention"
+            gradient="from-blue-500 to-blue-600"
             />
         </Link>
       </div>

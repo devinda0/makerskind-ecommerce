@@ -94,15 +94,23 @@ function ProductsIndex() {
         }),
         columnHelper.accessor('status', {
             header: 'Status',
-            cell: (info) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    info.getValue() === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                }`}>
-                    {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
-                </span>
-            ),
+            cell: (info) => {
+                const status = info.getValue()
+                const styles: Record<string, string> = {
+                    active: 'bg-green-100 text-green-800',
+                    draft: 'bg-gray-100 text-gray-800',
+                    archived: 'bg-slate-100 text-slate-800',
+                    pending_review: 'bg-blue-100 text-blue-800',
+                    rejected: 'bg-red-100 text-red-800',
+                }
+                const style = styles[status] || styles.draft
+                
+                return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style}`}>
+                        {status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    </span>
+                )
+            },
         }),
         columnHelper.accessor('inventory.onHand', {
             header: 'Inventory',
