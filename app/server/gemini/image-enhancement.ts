@@ -63,18 +63,24 @@ export async function downloadImageAsBase64(imageUrl: string): Promise<{ data: s
  * Send an image to Gemini for enhancement
  * @param imageData - Base64 encoded image data
  * @param mimeType - MIME type of the image
+ * @param userPrompt - Optional custom prompt from the user
  * @returns Enhanced image as base64 data
  */
 export async function enhanceWithGemini(
     imageData: string,
-    mimeType: string
+    mimeType: string,
+    userPrompt?: string
 ): Promise<{ data: string; mimeType: string }> {
-    const prompt = [
-        { 
-            text: 'Enhance this product image for e-commerce. ' +
+    const defaultPrompt = 'Enhance this product image for e-commerce. ' +
                   'Improve lighting, color balance, and overall quality. ' +
                   'Keep the product as the main focus. ' +
                   'Return only the enhanced image.'
+                  
+    const promptText = userPrompt ? `${userPrompt} Return only the enhanced image.` : defaultPrompt
+
+    const prompt = [
+        { 
+            text: promptText
         },
         {
             inlineData: {
@@ -159,13 +165,14 @@ export async function uploadEnhancedImage(
  */
 export async function enhanceProductImage(
     productId: string,
-    originalImageUrl: string
+    originalImageUrl: string,
+    prompt?: string
 ): Promise<string> {
     // Step 1: Download and convert to base64
     const { data: originalData, mimeType } = await downloadImageAsBase64(originalImageUrl)
     
     // Step 2: Enhance with Gemini
-    const { data: enhancedData, mimeType: enhancedMimeType } = await enhanceWithGemini(originalData, mimeType)
+    const { data: enhancedData, mimeType: enhancedMimeType } = await enhanceWithGemini(originalData, mimeType, prompt)
     
     // Step 3: Upload enhanced image
     const enhancedUrl = await uploadEnhancedImage(productId, enhancedData, enhancedMimeType)

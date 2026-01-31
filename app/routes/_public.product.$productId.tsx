@@ -107,8 +107,17 @@ function ProductDetailPage() {
         }
     }
 
-    // Determine main image
-    const mainImage = product.images.enhanced?.[0] || product.images.original?.[0] || 'https://placehold.co/600x600?text=No+Image'
+    // Determine all available images
+    // If enhanced images exist, show ONLY those. Otherwise, show original images.
+    const hasEnhanced = product.images.enhanced && product.images.enhanced.length > 0
+    const allImages = hasEnhanced 
+        ? product.images.enhanced 
+        : (product.images.original || [])
+
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
+    // Determine currently displayed image
+    const displayImage = selectedImage || allImages[0] || 'https://placehold.co/600x600?text=No+Image'
 
     return (
         <div className="product-detail-page">
@@ -127,22 +136,20 @@ function ProductDetailPage() {
                     <div className="product-gallery">
                         <div className="main-image-wrapper">
                             <img 
-                                src={mainImage} 
+                                src={displayImage} 
                                 alt={product.name} 
                                 className="main-image"
                             />
-                            {product.images.enhanced?.length > 0 && (
-                                <div className="ai-badge">
-                                    <span className="ai-dot"></span>
-                                    AI Enhanced
-                                </div>
-                            )}
                         </div>
-                        {/* Thumbnails Placeholder (Visual only for now) */}
+                        {/* Thumbnails */}
                         <div className="thumbnails-grid">
-                            {[mainImage, mainImage, mainImage].map((img, i) => (
-                                <div key={i} className={`thumbnail-wrapper ${i === 0 ? 'active' : ''}`}>
-                                    <img src={img} alt="" className="thumbnail-image" />
+                            {allImages.map((img, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`thumbnail-wrapper ${displayImage === img ? 'active' : ''}`}
+                                    onClick={() => setSelectedImage(img)}
+                                >
+                                    <img src={img} alt={`${product.name} view ${i + 1}`} className="thumbnail-image" />
                                 </div>
                             ))}
                         </div>

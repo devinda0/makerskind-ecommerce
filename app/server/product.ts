@@ -338,13 +338,14 @@ export const associateImageFn = createServerFn({ method: "POST" })
             throw new Error('Failed to associate images with product')
         }
         
-        // Admin sees full product (serialized), others see filtered
-        if (user.role === 'admin') {
-            return { product: toSerializable(updatedProduct), success: true }
-        }
-        
         return { product: stripCostField(updatedProduct), success: true }
     })
+
+interface RefineImageInput {
+    productId: string
+    originalImageUrl: string
+    prompt?: string
+}
 
 /**
  * Refine an image using Gemini AI (Supplier/Admin only)
@@ -370,7 +371,7 @@ export const refineImageFn = createServerFn({ method: "POST" })
         // Only suppliers and admins can refine images
         const user = await requireRole(['supplier', 'admin'])
         
-        const { productId, originalImageUrl } = data
+        const { productId, originalImageUrl, prompt } = data
         
         // Validate the image URL is a Firebase Storage URL
         if (!validateFirebaseStorageUrl(originalImageUrl)) {
@@ -391,8 +392,8 @@ export const refineImageFn = createServerFn({ method: "POST" })
             }
         }
         
-        // Enhance the image using Gemini AI
-        const enhancedImageUrl = await enhanceProductImage(productId, originalImageUrl)
+        // Enhance the image using Gemini AI, with optional prompt
+        const enhancedImageUrl = await enhanceProductImage(productId, originalImageUrl, prompt)
         
         // Associate the enhanced image with the product
         const updatedProduct = await associateImages(productId, {
