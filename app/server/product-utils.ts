@@ -94,6 +94,7 @@ export interface UpdateProductInput {
     sellingPrice?: number
     quantity?: number
     images?: string[]
+    enhancedImages?: string[]
     status?: ProductStatus
 }
 
@@ -329,6 +330,10 @@ export async function updateProduct(
     
     if (input.images !== undefined) {
         updateFields['images.original'] = input.images
+    }
+    
+    if (input.enhancedImages !== undefined) {
+        updateFields['images.enhanced'] = input.enhancedImages
     }
     
     if (input.status !== undefined) {
