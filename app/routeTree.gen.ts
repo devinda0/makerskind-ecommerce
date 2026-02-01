@@ -16,7 +16,6 @@ import { Route as SupplierIndexRouteImport } from './routes/supplier/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public.index'
 import { Route as SupplierProductsRouteImport } from './routes/supplier/products'
-import { Route as SupplierOrdersRouteImport } from './routes/supplier/orders'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as PublicRegisterRouteImport } from './routes/_public.register'
@@ -25,7 +24,9 @@ import { Route as PublicProductsRouteImport } from './routes/_public.products'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as PublicCheckoutRouteImport } from './routes/_public.checkout'
 import { Route as SupplierProductsIndexRouteImport } from './routes/supplier/products/index'
+import { Route as SupplierOrdersIndexRouteImport } from './routes/supplier/orders/index'
 import { Route as SupplierProductsNewRouteImport } from './routes/supplier/products/new'
+import { Route as SupplierOrdersOrderIdRouteImport } from './routes/supplier/orders/$orderId'
 import { Route as PublicProductProductIdRouteImport } from './routes/_public.product.$productId'
 
 const SupplierRoute = SupplierRouteImport.update({
@@ -60,11 +61,6 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
 const SupplierProductsRoute = SupplierProductsRouteImport.update({
   id: '/products',
   path: '/products',
-  getParentRoute: () => SupplierRoute,
-} as any)
-const SupplierOrdersRoute = SupplierOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
   getParentRoute: () => SupplierRoute,
 } as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
@@ -107,10 +103,20 @@ const SupplierProductsIndexRoute = SupplierProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SupplierProductsRoute,
 } as any)
+const SupplierOrdersIndexRoute = SupplierOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => SupplierRoute,
+} as any)
 const SupplierProductsNewRoute = SupplierProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => SupplierProductsRoute,
+} as any)
+const SupplierOrdersOrderIdRoute = SupplierOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => SupplierRoute,
 } as any)
 const PublicProductProductIdRoute = PublicProductProductIdRouteImport.update({
   id: '/product/$productId',
@@ -128,13 +134,14 @@ export interface FileRoutesByFullPath {
   '/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/supplier/orders': typeof SupplierOrdersRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
   '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
   '/product/$productId': typeof PublicProductProductIdRoute
+  '/supplier/orders/$orderId': typeof SupplierOrdersOrderIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
+  '/supplier/orders': typeof SupplierOrdersIndexRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -145,12 +152,13 @@ export interface FileRoutesByTo {
   '/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/supplier/orders': typeof SupplierOrdersRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
   '/supplier': typeof SupplierIndexRoute
   '/product/$productId': typeof PublicProductProductIdRoute
+  '/supplier/orders/$orderId': typeof SupplierOrdersOrderIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
+  '/supplier/orders': typeof SupplierOrdersIndexRoute
   '/supplier/products': typeof SupplierProductsIndexRoute
 }
 export interface FileRoutesById {
@@ -165,13 +173,14 @@ export interface FileRoutesById {
   '/_public/register': typeof PublicRegisterRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/supplier/orders': typeof SupplierOrdersRoute
   '/supplier/products': typeof SupplierProductsRouteWithChildren
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/supplier/': typeof SupplierIndexRoute
   '/_public/product/$productId': typeof PublicProductProductIdRoute
+  '/supplier/orders/$orderId': typeof SupplierOrdersOrderIdRoute
   '/supplier/products/new': typeof SupplierProductsNewRoute
+  '/supplier/orders/': typeof SupplierOrdersIndexRoute
   '/supplier/products/': typeof SupplierProductsIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,13 +195,14 @@ export interface FileRouteTypes {
     | '/register'
     | '/admin/inventory'
     | '/admin/orders'
-    | '/supplier/orders'
     | '/supplier/products'
     | '/'
     | '/admin/'
     | '/supplier/'
     | '/product/$productId'
+    | '/supplier/orders/$orderId'
     | '/supplier/products/new'
+    | '/supplier/orders'
     | '/supplier/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -203,12 +213,13 @@ export interface FileRouteTypes {
     | '/register'
     | '/admin/inventory'
     | '/admin/orders'
-    | '/supplier/orders'
     | '/'
     | '/admin'
     | '/supplier'
     | '/product/$productId'
+    | '/supplier/orders/$orderId'
     | '/supplier/products/new'
+    | '/supplier/orders'
     | '/supplier/products'
   id:
     | '__root__'
@@ -222,13 +233,14 @@ export interface FileRouteTypes {
     | '/_public/register'
     | '/admin/inventory'
     | '/admin/orders'
-    | '/supplier/orders'
     | '/supplier/products'
     | '/_public/'
     | '/admin/'
     | '/supplier/'
     | '/_public/product/$productId'
+    | '/supplier/orders/$orderId'
     | '/supplier/products/new'
+    | '/supplier/orders/'
     | '/supplier/products/'
   fileRoutesById: FileRoutesById
 }
@@ -289,13 +301,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplierProductsRouteImport
       parentRoute: typeof SupplierRoute
     }
-    '/supplier/orders': {
-      id: '/supplier/orders'
-      path: '/orders'
-      fullPath: '/supplier/orders'
-      preLoaderRoute: typeof SupplierOrdersRouteImport
-      parentRoute: typeof SupplierRoute
-    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -352,12 +357,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupplierProductsIndexRouteImport
       parentRoute: typeof SupplierProductsRoute
     }
+    '/supplier/orders/': {
+      id: '/supplier/orders/'
+      path: '/orders'
+      fullPath: '/supplier/orders'
+      preLoaderRoute: typeof SupplierOrdersIndexRouteImport
+      parentRoute: typeof SupplierRoute
+    }
     '/supplier/products/new': {
       id: '/supplier/products/new'
       path: '/new'
       fullPath: '/supplier/products/new'
       preLoaderRoute: typeof SupplierProductsNewRouteImport
       parentRoute: typeof SupplierProductsRoute
+    }
+    '/supplier/orders/$orderId': {
+      id: '/supplier/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/supplier/orders/$orderId'
+      preLoaderRoute: typeof SupplierOrdersOrderIdRouteImport
+      parentRoute: typeof SupplierRoute
     }
     '/_public/product/$productId': {
       id: '/_public/product/$productId'
@@ -420,15 +439,17 @@ const SupplierProductsRouteWithChildren =
   SupplierProductsRoute._addFileChildren(SupplierProductsRouteChildren)
 
 interface SupplierRouteChildren {
-  SupplierOrdersRoute: typeof SupplierOrdersRoute
   SupplierProductsRoute: typeof SupplierProductsRouteWithChildren
   SupplierIndexRoute: typeof SupplierIndexRoute
+  SupplierOrdersOrderIdRoute: typeof SupplierOrdersOrderIdRoute
+  SupplierOrdersIndexRoute: typeof SupplierOrdersIndexRoute
 }
 
 const SupplierRouteChildren: SupplierRouteChildren = {
-  SupplierOrdersRoute: SupplierOrdersRoute,
   SupplierProductsRoute: SupplierProductsRouteWithChildren,
   SupplierIndexRoute: SupplierIndexRoute,
+  SupplierOrdersOrderIdRoute: SupplierOrdersOrderIdRoute,
+  SupplierOrdersIndexRoute: SupplierOrdersIndexRoute,
 }
 
 const SupplierRouteWithChildren = SupplierRoute._addFileChildren(

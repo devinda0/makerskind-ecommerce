@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { getSupplierOrdersFn } from '../../server/order'
+import { getSupplierOrdersFn } from '../../../server/order'
 import { z } from 'zod'
 
 // Define search parameters for pagination
@@ -7,7 +7,7 @@ const searchSchema = z.object({
     page: z.number().optional().default(1),
 })
 
-export const Route = createFileRoute('/supplier/orders')({
+export const Route = createFileRoute('/supplier/orders/')({
     validateSearch: searchSchema,
     loaderDeps: ({ search }) => ({ page: search.page }),
     loader: async ({ deps }) => {
@@ -54,18 +54,17 @@ function SupplierOrdersPage() {
                             </tr>
                         ) : (
                             orders.map((order) => {
-                                // Calculate total for this supplier's items only
-                                // Note: order.items might contain items from OTHER suppliers too, 
-                                // but we should filter visuals if needed.
-                                // However, existing getSupplierOrdersFn returns full order. 
-                                // Let's simplify display to just show the Order total for now or do a quick client-side calc if accessible.
-                                // Actually check implementation of getSupplierOrdersFn... it returns standard order object.
-                                // We'll just display the full order total for context but maybe tooltip "Your items: $X"
-                                // For MVP, let's just show Order Total to avoid confusion.
-                                
                                 return (
                                     <tr key={order._id}>
-                                        <td className="font-mono text-xs">{order._id.slice(-6).toUpperCase()}</td>
+                                        <td className="font-mono text-xs">
+    <Link 
+        to="/supplier/orders/$orderId" 
+        params={{ orderId: order._id }}
+        className="text-indigo-600 hover:text-indigo-900 hover:underline"
+    >
+        {order._id.slice(-6).toUpperCase()}
+    </Link>
+</td>
                                         <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                                         <td><StatusBadge status={order.status} /></td>
                                         <td>User {order.userId.slice(0,4)}...</td>
