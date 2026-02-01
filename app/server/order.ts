@@ -149,9 +149,31 @@ export const getSupplierOrdersFn = createServerFn({ method: "GET" })
             status: data.status
         })
         
+        const supplierOrders = result.orders.map(order => {
+             // Filter items for this supplier
+            const supplierItems = order.items.filter(item => item.supplierId === user.id)
+            
+            // Calculate totals for this supplier based on COST
+            const supplierTotal = supplierItems.reduce((sum, item) => {
+                return sum + (item.quantity * (item.costPrice || 0))
+            }, 0)
+
+            const serializable = toSerializable(order)
+
+            return {
+                ...serializable,
+                items: supplierItems,
+                totals: {
+                    ...serializable.totals,
+                    subtotal: supplierTotal,
+                    total: supplierTotal
+                }
+            }
+        })
+
         return {
             ...result,
-            orders: result.orders.map(toSerializable)
+            orders: supplierOrders
         }
     })
 
@@ -194,6 +216,103 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
             throw new Error('Order not found')
         }
         
+        const updatedOrder = await updateOrderStatus(data.orderId, data.status)
+        
+        if (!updatedOrder) {
+            throw new Error('Failed to update order status')
+        }
+        
+        return { 
+            order: toSerializable(updatedOrder), 
+            success: true 
+        }
+    })
+
+/**
+ * Get a specific order details for a supplier
+ * Filters items to only show those belonging to the supplier
+ * Shows COST price instead of unit price
+ */
+export const getSupplierOrderByIdFn = createServerFn({ method: "GET" })
+    .inputValidator((data: { orderId: string }) => data)
+    .handler(async ({ data }) => {
+        const { requireRole } = await import('./auth-utils')
+        const { getOrderById, toSerializable } = await import('./order-utils')
+        
+        const user = await requireRole(['supplier'])
+        
+        const order = await getOrderById(data.orderId)
+        
+        if (!order) {
+            throw new Error('Order not found')
+        }
+        
+        // Filter items for this supplier
+        const supplierItems = order.items.filter(item => item.supplierId === user.id)
+        
+        if (supplierItems.length === 0) {
+             throw new Error('Order not found or no items for this supplier')
+        }
+        
+        // Calculate totals for this supplier based on COST
+        const supplierTotal = supplierItems.reduce((sum, item) => {
+            return sum + (item.quantity * (item.costPrice || 0))
+        }, 0)
+
+        // Create a specialized view of the order for the supplier
+        const serializableOrder = toSerializable(order)
+        
+        return {
+            order: {
+                ...serializableOrder,
+                items: supplierItems, // Only return their items
+                totals: {
+                    ...serializableOrder.totals,
+                    subtotal: supplierTotal, // Override with their cost total
+                    total: supplierTotal // Override with their cost total (ignoring shipping logic for now as it's B2C usually)
+                }
+            }
+        }
+    })
+
+/**
+ * Update order status by Supplier
+ * Suppliers can only move status forward: Pending -> Processing -> Shipped -> Delivered
+ */
+export const updateSupplierOrderStatusFn = createServerFn({ method: "POST" })
+    .inputValidator((data: UpdateOrderStatusInput) => data)
+    .handler(async ({ data }) => {
+        const { requireRole } = await import('./auth-utils')
+        const { getOrderById, updateOrderStatus, toSerializable } = await import('./order-utils')
+        
+        const user = await requireRole(['supplier'])
+        
+        const order = await getOrderById(data.orderId)
+        if (!order) {
+            throw new Error('Order not found')
+        }
+
+        // Verify supplier has items in this order
+        const hasItems = order.items.some(item => item.supplierId === user.id)
+        if (!hasItems) {
+            throw new Error('Access denied')
+        }
+        
+        // Validate Status Transition
+        const validTransitions: Record<string, OrderStatus[]> = {
+            'pending': ['processing', 'cancelled'],
+            'processing': ['shipped', 'cancelled'],
+            'shipped': ['delivered'],
+            'delivered': [],
+            'cancelled': []
+        }
+        
+        const allowed = validTransitions[order.status] || []
+        if (!allowed.includes(data.status)) {
+            throw new Error(`Invalid status transition from ${order.status} to ${data.status}`)
+        }
+        
+        // Update status
         const updatedOrder = await updateOrderStatus(data.orderId, data.status)
         
         if (!updatedOrder) {

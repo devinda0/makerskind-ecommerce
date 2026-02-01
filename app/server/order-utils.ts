@@ -8,6 +8,7 @@ export interface OrderItem {
     productName: string
     quantity: number
     unitPrice: number      // Selling price at time of order
+    costPrice: number      // Cost price at time of order (Snapshot)
     supplierId: string
 }
 
@@ -169,6 +170,7 @@ export async function createOrder(
                     productName: product.name,
                     quantity: item.quantity,
                     unitPrice: product.pricing.selling,
+                    costPrice: product.pricing.cost, // Snapshot cost
                     supplierId: product.supplierId
                 })
                 

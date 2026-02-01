@@ -27,6 +27,8 @@ export default function AddProductWizard() {
                 await createProductFn({
                     data: {
                         ...value,
+                        // Selling price defaults to 0 as it is set by admin review
+                        sellingPrice: 0,
                         status: 'pending_review',
                         images: value.images
                     }
@@ -145,26 +147,14 @@ export default function AddProductWizard() {
 
                 {step === 2 && (
                     <div className="step-panel">
-                        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <p className="mb-4 text-sm text-gray-500">
+                            Set your cost price. The final selling price will be determined during the review process.
+                        </p>
+                        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
                             <form.Field name="costPrice">
                                 {(field) => (
                                     <div className="form-group">
                                         <label className="form-label">Cost Price ($)</label>
-                                        <input
-                                            type="number"
-                                            className="form-input"
-                                            value={field.state.value}
-                                            onChange={(e) => field.handleChange(Number(e.target.value))}
-                                            min="0"
-                                            step="0.01"
-                                        />
-                                    </div>
-                                )}
-                            </form.Field>
-                            <form.Field name="sellingPrice">
-                                {(field) => (
-                                    <div className="form-group">
-                                        <label className="form-label">Selling Price ($)</label>
                                         <input
                                             type="number"
                                             className="form-input"
@@ -272,8 +262,8 @@ export default function AddProductWizard() {
                                 <p>{form.state.values.name}</p>
                             </div>
                             <div className="summary-item">
-                                <label>Price</label>
-                                <p>Host: ${form.state.values.costPrice} / Sell: ${form.state.values.sellingPrice}</p>
+                                <label>Cost Price</label>
+                                <p>${form.state.values.costPrice}</p>
                             </div>
                             <div className="summary-item" style={{ gridColumn: 'span 2' }}>
                                 <label>Description</label>
