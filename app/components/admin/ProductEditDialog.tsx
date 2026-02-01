@@ -79,7 +79,8 @@ export function ProductEditDialog({ product, isOpen, onClose }: ProductEditDialo
                     costPrice: data.costPrice,
                     sellingPrice: data.sellingPrice,
                     quantity: data.quantity,
-                    images: data.images.original
+                    images: data.images.original,
+                    enhancedImages: data.images.enhanced
                 } 
             })
         },
